@@ -240,11 +240,12 @@ import chatRoutes from "./routes/chat.js";
 import usersRoutes from "./routes/users.js";
 import chatBotRoutes from "./routes/chatServer.js";
 import assessmentRoutes from "./routes/assessmentRoutes.js";
-// 👇 IMPORT THE NEW MOOD ROUTES FILE
 import moodRoutes from "./routes/moodRoutes.js"; 
 import userStatsRoutes from "./routes/userStatsRoutes.js";
 
-import pool from "./config/db.js";
+import pool from "./config/db.js"; 
+// ⚠️ NEW: Import the authentication middleware
+import authenticateToken from './middleware/authenticateToken.js'; 
 
 // CRITICAL FIX: Call dotenv.config() immediately after ALL imports
 dotenv.config();
@@ -255,6 +256,7 @@ const PORT = 5050;
 // ✅ Allow frontend to connect (adjust port if needed)
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(bodyParser.json());
+app.use(express.json()); // Ensure Express's parser is active
 
 // 🔌 MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -262,6 +264,141 @@ mongoose.connect(process.env.MONGODB_URI, {
   useUnifiedTopology: true
 }).then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => console.error("❌ MongoDB error:", err));
+
+// ----------------------------------------------------
+//          🛡️ COUNSELLING BOOKING ROUTES (PostgreSQL)
+// ----------------------------------------------------
+
+// 1. GET /api/counsellors/availability (Publicly accessible)
+app.get('/api/counsellors/availability', async (req, res) => {
+    try {
+        const query = `
+            SELECT
+                cs.schedule_id,
+                c.name,
+                c.title,
+                cs.schedule_date,
+                cs.schedule_time
+            FROM 
+                counsellor_schedule cs
+            JOIN 
+                counsellors c ON cs.counsellor_id = c.counsellor_id
+            WHERE 
+                cs.is_booked = FALSE
+                AND cs.schedule_date >= CURRENT_DATE
+            ORDER BY 
+                cs.schedule_date ASC, cs.schedule_time ASC;
+        `;
+        const { rows } = await pool.query(query);
+        res.json(rows);
+    } catch (err) {
+        console.error("Error fetching availability:", err);
+        res.status(500).json({ error: "Failed to fetch schedule data." });
+    }
+});
+
+// 2. 🔒 GET /api/bookings/my-appointments (Requires JWT)
+app.get('/api/bookings/my-appointments', authenticateToken, async (req, res) => {
+    // ID securely attached by the middleware
+    const studentEnrollmentNumber = req.userId; 
+
+    try {
+        const query = `
+            SELECT
+                br.booking_id,
+                br.status,
+                c.name AS counsellor_name,
+                c.title AS counsellor_title,
+                cs.schedule_date,
+                cs.schedule_time
+            FROM 
+                booking_records br
+            JOIN 
+                counsellor_schedule cs ON br.schedule_id = cs.schedule_id
+            JOIN 
+                counsellors c ON cs.counsellor_id = c.counsellor_id
+            WHERE 
+                br.student_id = $1
+                AND cs.schedule_date >= CURRENT_DATE
+            ORDER BY 
+                cs.schedule_date ASC, cs.schedule_time ASC;
+        `;
+        const { rows } = await pool.query(query, [studentEnrollmentNumber]);
+        res.json(rows);
+    } catch (err) {
+        console.error("Error fetching secure student bookings:", err);
+        res.status(500).json({ error: "Failed to retrieve booking history." });
+    }
+});
+
+
+// 3. 🔒 POST /api/bookings/create (Requires JWT + Transaction)
+app.post('/api/bookings/create', authenticateToken, async (req, res) => {
+    // CRITICAL FIX: Get the secure ID from the middleware, NOT req.body
+    const studentEnrollmentNumber = req.userId;
+    const { schedule_id, student_name } = req.body; 
+    
+    if (!schedule_id || !student_name) {
+        return res.status(400).json({ success: false, message: "Missing schedule ID or student name." });
+    }
+    
+    const client = await pool.connect(); 
+
+    try {
+        await client.query('BEGIN');
+
+        const checkQuery = `
+            SELECT is_booked
+            FROM counsellor_schedule
+            WHERE schedule_id = $1
+            FOR UPDATE;
+        `;
+        const result = await client.query(checkQuery, [schedule_id]);
+
+        if (result.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ success: false, message: "Schedule slot not found." });
+        }
+        if (result.rows[0].is_booked === true) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ success: false, message: "This slot was just booked by another student. Please choose another one." });
+        }
+
+        const updateQuery = `
+            UPDATE counsellor_schedule
+            SET is_booked = TRUE
+            WHERE schedule_id = $1;
+        `;
+        await client.query(updateQuery, [schedule_id]);
+
+        const insertQuery = `
+            INSERT INTO booking_records (schedule_id, student_id, student_name, status)
+            VALUES ($1, $2, $3, 'Confirmed')
+            RETURNING booking_id;
+        `;
+        const bookingResult = await client.query(insertQuery, [schedule_id, studentEnrollmentNumber, student_name]);
+
+        await client.query('COMMIT'); 
+
+        res.json({ 
+            success: true, 
+            message: "Booking confirmed successfully.", 
+            booking_id: bookingResult.rows[0].booking_id 
+        });
+
+    } catch (err) {
+        await client.query('ROLLBACK'); 
+        console.error("Booking transaction failed:", err);
+        res.status(500).json({ success: false, message: "An internal server error occurred during booking." });
+    } finally {
+        client.release(); 
+    }
+});
+
+
+// ----------------------------------------------------
+//                ⚡ EXISTING ROUTES
+// ----------------------------------------------------
 
 // 🔐 Authentication Routes
 app.use("/api/auth", authRoutes);
@@ -281,6 +418,7 @@ app.use("/api/assessment", assessmentRoutes(pool));
 // 🎭 MOOD TRACKER ROUTES (NEW)
 app.use("/api/mood", moodRoutes(pool)); 
 app.use("/api/user-stats", userStatsRoutes(pool));
+
 
 // 🤖 Chatbot Route (OpenAI)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -316,5 +454,5 @@ app.post("/api/chatbot", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log(`📊 Mood API available at: http://localhost:${PORT}/api/mood`);
+  console.log(`📡 Booking API endpoints active.`);
 });

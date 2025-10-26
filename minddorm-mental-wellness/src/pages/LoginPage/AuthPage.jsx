@@ -467,7 +467,8 @@ const AuthPage = ({ onAuthSuccess }) => {
         setSuccess('Login successful! Redirecting...');
 
         // 🔹 Store token in localStorage
-        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('token', data.token);
+
 
         // Call parent function if needed
         if (onAuthSuccess) {

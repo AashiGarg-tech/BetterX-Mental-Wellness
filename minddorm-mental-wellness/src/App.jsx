@@ -151,6 +151,7 @@ import WellnessCard from "./pages/Support/WellnessCard";
 import ResourceIcon from "./pages/Support/ResourceIcon";  
 import CallAway from "./pages/Support/CallAway";
 import PathwaysToWellness from "./pages/Support/PathwaysToWellness";
+import BookingChatbot from "./pages/Support/BookingChatbot";
 
 import SupportOptions from "./pages/Resources/support_condition";
 import ArticlesPage from "./pages/Resources/articles_page";
@@ -242,6 +243,7 @@ const AppContent = () => {
           <Route path="/ListenLearnPage" element={<ListenLearnPage />} />
           <Route path="/ReachOutPage" element={<ReachOutPage />} />
           <Route path="/SupportOptions" element={<SupportOptions />} />
+          <Route path="/book-counselling" element={<BookingChatbot />} />
           <Route path="/WellnessCard" element={<WellnessCard />} />
           <Route path="/ResourceIcon" element={<ResourceIcon />} />
           <Route path="/ArticlesPage" element={<ArticlesPage />} />
