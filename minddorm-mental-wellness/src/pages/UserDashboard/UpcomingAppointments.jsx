@@ -2,14 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, UserCircle, Frown } from 'lucide-react'; 
 
 const API_BASE_URL = 'http://localhost:5050/api'; 
+const MAX_VISIBLE_APPOINTMENTS = 3; // Define the maximum to show initially
 
 // --- CONCEPTUAL AUTH HOOK (Crucial for secure fetching) ---
-// NOTE: This must be replaced with your actual authentication hook/context.
 const useAuth = () => {
-    // Reads the live token from storage (e.g., set during login)
     const token = localStorage.getItem('authToken'); 
-    
-    // MOCK: This user data should come from decoding your JWT payload
     const [user] = useState({ 
         token: token, 
         enrollment_number: '00101172024',
@@ -74,11 +71,13 @@ const UpcomingAppointments = () => {
     const [appointments, setAppointments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    // State used to manually trigger a refresh (e.g., after booking)
     const [refreshKey, setRefreshKey] = useState(0); 
 
+    // ⚠️ NEW STATE: Controls how many appointments are visible
+    const [visibleCount, setVisibleCount] = useState(MAX_VISIBLE_APPOINTMENTS);
+
+
     useEffect(() => {
-        // 1. Authentication Guard: Fails immediately if token is missing
         if (!token) {
             setIsLoading(false);
             setError("Please log in to view your appointments.");
@@ -90,7 +89,6 @@ const UpcomingAppointments = () => {
             setError(null);
             
             try {
-                // ⚠️ SECURE FETCH: Sends JWT in the Authorization header
                 const response = await fetch(`${API_BASE_URL}/bookings/my-appointments`, {
                     method: 'GET',
                     headers: {
@@ -108,7 +106,6 @@ const UpcomingAppointments = () => {
                 
                 const rawData = await response.json();
                 
-                // Process and format the live data
                 setAppointments(rawData.map(booking => {
                     const { formattedDate, formattedTime } = formatDateTime(
                         booking.schedule_date, 
@@ -133,7 +130,12 @@ const UpcomingAppointments = () => {
         
         fetchBookings();
 
-    }, [token, refreshKey]); // Reruns when token or refreshKey changes
+    }, [token, refreshKey]); 
+
+    // Determine which appointments to display: only the slice based on visibleCount
+    const appointmentsToDisplay = appointments.slice(0, visibleCount);
+    const hasMoreAppointments = appointments.length > MAX_VISIBLE_APPOINTMENTS;
+    const isViewingAll = visibleCount >= appointments.length;
 
     // --- Component Rendering ---
 
@@ -143,7 +145,7 @@ const UpcomingAppointments = () => {
                 <Calendar className="text-gray-600 w-5 h-5" />
                 <h2 className="text-xl font-semibold text-gray-800">Your Upcoming Counselling Appointments</h2>
                 
-                {/* Manual refresh button for UX (useful after booking) */}
+                {/* Manual refresh button */}
                 <button 
                     onClick={() => setRefreshKey(prev => prev + 1)}
                     className="ml-auto text-sm text-blue-600 hover:text-blue-800 font-medium"
@@ -154,34 +156,20 @@ const UpcomingAppointments = () => {
             </div>
             
             <div className="min-h-[150px]">
-                {/* Loading State */}
-                {isLoading && (
-                    <div className="flex justify-center items-center h-full py-8 text-blue-600">
-                        <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">...</svg>
-                        Loading Bookings...
-                    </div>
-                )}
-
-                {/* Error State */}
-                {error && (
-                    <div className="text-center py-8 text-red-500">
-                        <Frown className="w-6 h-6 mx-auto mb-2" />
-                        <p>{error}</p>
-                    </div>
-                )}
-                
-                {/* No Bookings State */}
-                {!isLoading && !error && appointments.length === 0 && (
+                {/* Loading / Error / No Bookings States (remain the same) */}
+                {isLoading && ( /* Loading JSX */ <div className="flex justify-center items-center h-full py-8 text-blue-600">... Loading Bookings...</div> )}
+                {error && ( /* Error JSX */ <div className="text-center py-8 text-red-500">... {error}</div> )}
+                {!isLoading && !error && appointments.length === 0 && ( /* No Bookings JSX */ 
                     <div className="text-center py-8 text-gray-500">
                         <p className="font-medium">You have no upcoming confirmed sessions.</p>
                         <p className="text-sm mt-1">Visit the Support Page to book one!</p>
                     </div>
                 )}
 
-                {/* Displaying Appointments */}
+                {/* ⚠️ DISPLAYING SLICED APPOINTMENTS */}
                 {!isLoading && appointments.length > 0 && (
-                    <div>
-                        {appointments.map((item, index) => (
+                    <div className='pb-2'>
+                        {appointmentsToDisplay.map((item, index) => (
                             <AppointmentRow
                                 key={index}
                                 doctor={item.doctor}
@@ -194,6 +182,27 @@ const UpcomingAppointments = () => {
                     </div>
                 )}
             </div>
+            
+            {/* ⚠️ VIEW MORE / VIEW LESS BUTTON */}
+            {!isLoading && appointments.length > 0 && hasMoreAppointments && (
+                <div className="text-center pt-2">
+                    {isViewingAll ? (
+                        <button
+                            onClick={() => setVisibleCount(MAX_VISIBLE_APPOINTMENTS)}
+                            className="text-sm text-blue-600 font-semibold hover:text-blue-800"
+                        >
+                            View Less (Showing {MAX_VISIBLE_APPOINTMENTS})
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setVisibleCount(appointments.length)}
+                            className="text-sm text-blue-600 font-semibold hover:text-blue-800"
+                        >
+                            View More ({appointments.length - MAX_VISIBLE_APPOINTMENTS} hidden)
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

@@ -157,14 +157,14 @@ const BookingChatbot = () => {
             // 3. Start Chat at Date Selection (Step 2)
             if (sortedDates.length === 0) {
                 setMessages([
-                    { sender: 'bot', text: `👋 Welcome back, **${studentName}**. I apologize, but all counsellors are fully booked for the next month. Please try again later.` }
+                    { sender: 'bot', text: `👋 Welcome back! I apologize, but all counsellors are fully booked for the next month. Please try again later.` }
                 ]);
                 setStep(5);
             } else {
                 const dateList = sortedDates.slice(0, 7).map((d, i) => `**${i + 1}. ${d}**`).join('\n');
                 
                 setMessages([
-                    { sender: 'bot', text: `👋 Welcome back, **${studentName}**! We have availability on the following dates (next 7 shown):\n\n${dateList}\n\nPlease enter the **number** corresponding to the date you'd like to book:` }
+                    { sender: 'bot', text: `👋 Welcome back! We have availability on the following dates (next 7 shown):\n\n${dateList}\n\nPlease enter the **number** corresponding to the date you'd like to book. \nYou can type **EXIT** to leave anytime.` }
                 ]);
                 setStep(2); 
             }
@@ -291,11 +291,11 @@ const BookingChatbot = () => {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="w-full max-w-lg h-[80vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
                 {/* Header */}
-                <div className="bg-blue-800 text-white p-4 flex items-center justify-between shadow-lg">
-                    <h2 className="text-xl font-bold">College Counselling Bot 🤖</h2>
+                <div className="bg-[#83acc1] text-white p-4 flex items-center justify-between shadow-lg">
+                    <h2 className="text-xl font-bold">College Counselling Bot</h2>
                     <button 
                         onClick={() => navigate(-1)} 
-                        className="text-sm px-3 py-1 bg-blue-600 rounded-full hover:bg-blue-700 transition"
+                        className="text-sm px-3 py-1 bg-[#618191] rounded-full hover:bg-[#4f6875] transition"
                     >
                         &larr; Back
                     </button>
@@ -320,13 +320,13 @@ const BookingChatbot = () => {
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder={step === 5 ? "Session finished. Type EXIT to leave." : "Type your selection here..."}
+                            placeholder={step === 5 ? "Session finished!" : "Type your selection here..."}
                             className="flex-1 p-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             disabled={step === 5 || step === 0}
                         />
                         <button
                             type="submit"
-                            className="bg-blue-600 text-white p-3 rounded-r-lg hover:bg-blue-700 transition disabled:bg-gray-400"
+                            className="bg-[#618191] text-white p-3 rounded-r-lg hover:bg-[#4f6875] transition disabled:bg-gray-400"
                             disabled={step === 5 || step === 0}
                         >
                             Send
