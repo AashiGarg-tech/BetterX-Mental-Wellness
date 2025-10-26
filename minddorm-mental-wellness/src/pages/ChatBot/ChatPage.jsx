@@ -518,7 +518,7 @@ const ChatPage = ({ onSignOut }) => {
   const resetChat = async () => {
     if (window.confirm('Start a new conversation? This will clear your chat history.')) {
       try {
-        await fetch("http://localhost:5000/api/chat/reset", {
+        await fetch("http://localhost:5050/api/gemini-chat/reset", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId }),
@@ -537,6 +537,7 @@ const ChatPage = ({ onSignOut }) => {
         console.log('🔄 Chat reset successfully');
       } catch (error) {
         console.error('❌ Reset error:', error);
+        alert('Failed to reset chat. Please try again.');
       }
     }
   };
@@ -545,13 +546,13 @@ const ChatPage = ({ onSignOut }) => {
   const testConnection = async () => {
     try {
       console.log('🧪 Testing backend connection...');
-      const response = await fetch("http://localhost:5000/health");
+      const response = await fetch("http://localhost:5050/api/gemini-chat/health");
       const data = await response.json();
       console.log('✅ Backend health check:', data);
       alert(`Backend Status: ${data.status}\nAPI Key: ${data.hasApiKey ? 'Present' : 'Missing'}\nModel: ${data.model}`);
     } catch (error) {
       console.error('❌ Backend not reachable:', error);
-      alert('❌ Cannot connect to backend!\nMake sure server is running on port 5000.');
+      alert('❌ Cannot connect to backend!\nMake sure server is running on port 5050.');
     }
   };
 
@@ -586,21 +587,11 @@ const ChatPage = ({ onSignOut }) => {
       {/* Top Right Buttons */}
       <div className="flex justify-end gap-3 px-8 pt-6 pb-4">
         <button 
-          onClick={testConnection}
-          className="bg-green-500 text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-green-600 transition shadow-md"
-          title="Test backend connection"
-        >
-          🔌 Test
-        </button>
-        <button 
           onClick={resetChat}
           disabled={isLoading}
           className="bg-[#7B9FE8] text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-[#6B8FD8] transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           New Chat
-        </button>
-        <button className="bg-[#F59E6C] text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-[#E58E5C] transition shadow-md">
-          Language
         </button>
       </div>
 
