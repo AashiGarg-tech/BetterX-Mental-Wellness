@@ -369,8 +369,9 @@
 
 
 import React, { useState, useRef, useEffect } from 'react';
+import Header from '../../components/Header';
 
-const ChatPage = () => {
+const ChatPage = ({ onSignOut }) => {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState('');
@@ -415,28 +416,17 @@ const ChatPage = () => {
 
     try {
       console.log('📤 Sending to backend:', { message: userMessage, sessionId });
-      console.log('🔗 Backend URL: http://localhost:5000/api/chat');
+      console.log('🔗 Backend URL: http://localhost:5050/api/chat');
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-      // const response = await fetch("http://localhost:5000/api/chat", {
-      //   method: "POST",
-      //   headers: { 
-      //     "Content-Type": "application/json",
-      //     "Accept": "application/json"
-      //   },
-      //   body: JSON.stringify({
-      //     message: userMessage,
-      //     sessionId: sessionId
-      //   }),
-      //   signal: controller.signal
-      // });
-const response = await fetch("http://localhost:5000/api/gemini-chat", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ message: userMessage, sessionId }),
-});
+      const response = await fetch("http://localhost:5050/api/gemini-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage, sessionId }),
+      });
+
       clearTimeout(timeoutId);
 
       console.log('📊 Response status:', response.status);
@@ -567,6 +557,9 @@ const response = await fetch("http://localhost:5000/api/gemini-chat", {
 
   return (
     <div className="min-h-screen font-sans bg-gradient-to-b from-[#B5D8EB] to-[#F4F8FB]">
+      {/* Header Component */}
+      <Header onSignOut={onSignOut} />
+
       {/* Connection Error Banner */}
       {connectionError && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mx-4 mt-4 rounded">
