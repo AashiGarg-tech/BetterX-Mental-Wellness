@@ -255,6 +255,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Heart, Flame, Award, Loader2 } from 'lucide-react';
+import apiClient from '../../utils/apiClient';
 
 // Import your existing components (SAME AS BEFORE)
 import TipOfTheDay from './TipOfTheDay';
@@ -275,13 +276,7 @@ const WellnessDashboard = () => {
 
   const fetchMoodStats = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5050/api/mood/stats', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.fetchWithAuth('/api/mood/stats');
 
       const data = await response.json();
       

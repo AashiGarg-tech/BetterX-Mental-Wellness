@@ -265,6 +265,28 @@ mongoose.connect(process.env.MONGODB_URI, {
 }).then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => console.error("❌ MongoDB error:", err));
 
+// Ensure refresh_tokens table exists in Postgres so refresh-token storage works reliably.
+async function ensureRefreshTokensTable() {
+    try {
+        const createSql = `
+            CREATE TABLE IF NOT EXISTS refresh_tokens (
+                token TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                issued_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+                expires_at TIMESTAMP WITH TIME ZONE
+            );
+        `;
+        await pool.query(createSql);
+        console.log('✅ refresh_tokens table ensured');
+    } catch (err) {
+        console.warn('Could not ensure refresh_tokens table at startup:', err.message);
+        // Don't crash the server — the auth route already falls back to in-memory store.
+    }
+}
+
+// Call the ensure function at startup (non-blocking)
+ensureRefreshTokensTable();
+
 // ----------------------------------------------------
 //          🛡️ COUNSELLING BOOKING ROUTES (PostgreSQL)
 // ----------------------------------------------------

@@ -70,7 +70,11 @@ const authenticateToken = (req, res, next) => {
     jwt.verify(token, JWT_SECRET, (err, decodedPayload) => {
         if (err) {
             console.warn("JWT Verification Failed:", err.message);
-            return res.status(403).json({ message: 'Invalid or expired token.' });
+            // Distinguish between expired token and other verification failures.
+            if (err.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Token expired' });
+            }
+            return res.status(403).json({ message: 'Invalid token.' });
         }
 
         // --- THE CRITICAL FIX ---

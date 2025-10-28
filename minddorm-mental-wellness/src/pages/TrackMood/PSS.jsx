@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, CheckCircle } from "lucide-react";
+import apiClient from "../../utils/apiClient";
 
 const PSSAssessment = () => {
   // 🎯 UPDATED STATE: Added isSaving and saveError for API communication
@@ -77,26 +78,19 @@ const PSSAssessment = () => {
     };
   };
 
-  // 🎯 NEW: API call with 409 conflict error handling
+  // Save assessment using apiClient with automatic token refresh
   const saveAssessment = async (score, interpretation) => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      setSaveError("User not logged in. Please login again.");
-      return false;
-    }
-
     const assessmentData = {
-      assessment_type: "PSS", // Key for the database
+      assessment_type: "PSS",
       score: score,
       score_level: interpretation.level,
     };
 
     try {
-      const response = await fetch("http://localhost:5050/api/assessment/assessments", {
+      const response = await apiClient.fetchWithAuth("/api/assessment/assessments", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(assessmentData),
       });

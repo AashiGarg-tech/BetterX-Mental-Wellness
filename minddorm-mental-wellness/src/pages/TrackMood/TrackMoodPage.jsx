@@ -223,6 +223,7 @@
 
 
 import React, { useState } from "react";
+import apiClient from '../../utils/apiClient';
 import { Smile, Meh, Frown, CloudRain, Moon } from "lucide-react";
 import { useNavigate } from "react-router-dom"; 
 
@@ -233,7 +234,7 @@ const TrackMoodPage = () => {
     const [note, setNote] = useState("");
     const [message, setMessage] = useState('');
 
-    const API_URL = "http://localhost:5050/api/mood/entry";
+    const API_URL = '/api/mood/entry';
 
     const moods = [
         { id: 1, name: "Happy", rating: 5, icon: <Smile className="w-8 h-8 text-yellow-500" /> },
@@ -249,7 +250,8 @@ const TrackMoodPage = () => {
             return;
         }
 
-        const token = localStorage.getItem('authToken');
+        // prefer accessToken (new), fallback to legacy `token`
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
         if (!token) {
             setMessage({ type: 'error', text: 'Please login to save your mood.' });
             return;
@@ -258,12 +260,9 @@ const TrackMoodPage = () => {
         setMessage({ type: 'info', text: 'Saving reflection...' });
         
         try {
-            const response = await fetch(API_URL, {
+
+            const response = await apiClient.fetchWithAuth(API_URL, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
                 body: JSON.stringify({
                     mood_rating: selectedMood.rating,
                     notes: note,

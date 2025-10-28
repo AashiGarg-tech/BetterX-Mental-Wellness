@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, CheckCircle } from "lucide-react";
+import apiClient from "../../utils/apiClient";
 
 const GAD7Assessment = () => {
   const [answers, setAnswers] = useState({});
@@ -65,27 +66,17 @@ const GAD7Assessment = () => {
   };
 
   const saveAssessment = async (score, interpretation) => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      setSaveError("User not logged in. Please login again.");
-      return false;
-    }
-
-    // --- SECURITY FIX: Removed client-side token decoding. ---
-    // The backend should derive the userId from the token in the Authorization header.
     const assessmentData = {
       assessment_type: "GAD-7",
       score: score,
       score_level: interpretation.level,
-      // REMOVED: userId - The backend should get this from the token.
     };
 
     try {
-      const response = await fetch("http://localhost:5050/api/assessment/assessments", {
+      const response = await apiClient.fetchWithAuth("/api/assessment/assessments", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(assessmentData),
       });
@@ -93,10 +84,9 @@ const GAD7Assessment = () => {
       if (!response.ok) {
         const errorBody = await response.json();
         
-        // 🎯 NEW ERROR HANDLING: Check for the 409 Conflict status
+        // Handle 409 Conflict for the one-per-day restriction
         if (response.status === 409) {
-          // This handles the one-per-day restriction message from the backend
-          throw new Error(errorBody.message); 
+          throw new Error(errorBody.message);
         }
         
         // Handle all other errors (400, 500, etc.)

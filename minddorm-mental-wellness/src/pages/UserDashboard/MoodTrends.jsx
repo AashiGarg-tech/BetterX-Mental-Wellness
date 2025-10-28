@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Smile } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import apiClient from '../../utils/apiClient';
 
 const MoodTrends = () => {
   const [data, setData] = useState([]);
@@ -23,14 +24,7 @@ const MoodTrends = () => {
       setError(null);
 
       try {
-        const token = localStorage.getItem('authToken'); // JWT from login
-        if (!token) throw new Error("Authentication token not found.");
-
-        const response = await fetch("http://localhost:5050/api/assessment/trends", {
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
+        const response = await apiClient.fetchWithAuth("/api/assessment/trends");
 
         if (!response.ok) {
           throw new Error(`Failed to fetch assessment trends. Status: ${response.status}`);

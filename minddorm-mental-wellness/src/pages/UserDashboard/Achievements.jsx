@@ -50,6 +50,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Award, CheckCircle, Calendar, Users, Loader2 } from 'lucide-react';
+import apiClient from '../../utils/apiClient';
 
 const iconMap = {
   Award: Award,
@@ -82,13 +83,7 @@ const Achievements = () => {
 
   const fetchAchievements = async () => {
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:5050/api/user-stats/achievements', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiClient.fetchWithAuth('/api/user-stats/achievements');
 
       const data = await response.json();
       

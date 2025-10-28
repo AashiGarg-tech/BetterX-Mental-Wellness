@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, CheckCircle } from "lucide-react";
+import apiClient from "../../utils/apiClient";
 
 const PHQ9Assessment = () => {
   const [answers, setAnswers] = useState({});
@@ -72,38 +73,31 @@ const PHQ9Assessment = () => {
     };
   };
 
-  // 🎯 NEW: API call with 409 conflict error handling
+  // Save assessment using apiClient with automatic token refresh
   const saveAssessment = async (score, interpretation) => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      setSaveError("User not logged in. Please login again.");
-      return false;
-    }
-
     const assessmentData = {
-      assessment_type: "PHQ-9", // Key for the database
+      assessment_type: "PHQ-9",
       score: score,
       score_level: interpretation.level,
     };
 
     try {
-      const response = await fetch("http://localhost:5050/api/assessment/assessments", {
+      const response = await apiClient.fetchWithAuth("/api/assessment/assessments", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(assessmentData),
       });
+      
+      // Handle 409 Conflict for the one-per-day restriction
+      if (response.status === 409) {
+        const errorBody = await response.json();
+        throw new Error(errorBody.message);
+      }
 
       if (!response.ok) {
         const errorBody = await response.json();
-        
-        // Handle 409 Conflict for the one-per-day restriction
-        if (response.status === 409) {
-          throw new Error(errorBody.message); 
-        }
-        
         throw new Error(errorBody.message || "Failed to save assessment score.");
       }
 

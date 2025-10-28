@@ -1,19 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, UserCircle, Frown } from 'lucide-react'; 
+import apiClient from '../../utils/apiClient';
 
 const API_BASE_URL = 'http://localhost:5050/api'; 
 const MAX_VISIBLE_APPOINTMENTS = 3; // Define the maximum to show initially
-
-// --- CONCEPTUAL AUTH HOOK (Crucial for secure fetching) ---
-const useAuth = () => {
-    const token = localStorage.getItem('authToken'); 
-    const [user] = useState({ 
-        token: token, 
-        enrollment_number: '00101172024',
-        name: 'John Doe',
-    }); 
-    return { user };
-};
 // ----------------------------
 
 
@@ -64,10 +54,6 @@ const AppointmentRow = ({ doctor, title, date, time, status }) => {
 
 // Main Component
 const UpcomingAppointments = () => {
-    // Retrieve the authenticated token
-    const { user } = useAuth();
-    const token = user?.token; 
-    
     const [appointments, setAppointments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -78,24 +64,12 @@ const UpcomingAppointments = () => {
 
 
     useEffect(() => {
-        if (!token) {
-            setIsLoading(false);
-            setError("Please log in to view your appointments.");
-            return;
-        }
-        
         const fetchBookings = async () => {
             setIsLoading(true);
             setError(null);
             
             try {
-                const response = await fetch(`${API_BASE_URL}/bookings/my-appointments`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`, 
-                        'Content-Type': 'application/json'
-                    }
-                });
+                const response = await apiClient.fetchWithAuth('/api/bookings/my-appointments');
 
                 if (response.status === 401 || response.status === 403) {
                     throw new Error("Session expired. Please log in again.");
@@ -130,7 +104,7 @@ const UpcomingAppointments = () => {
         
         fetchBookings();
 
-    }, [token, refreshKey]); 
+    }, [refreshKey]); // Only depend on refreshKey since we removed token
 
     // Determine which appointments to display: only the slice based on visibleCount
     const appointmentsToDisplay = appointments.slice(0, visibleCount);

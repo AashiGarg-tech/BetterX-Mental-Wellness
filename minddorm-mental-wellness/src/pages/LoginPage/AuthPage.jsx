@@ -466,13 +466,20 @@ const AuthPage = ({ onAuthSuccess }) => {
         // ✅ Login successful
         setSuccess('Login successful! Redirecting...');
 
-        // 🔹 Store token in localStorage
-        localStorage.setItem('token', data.token);
+        // 🔹 Store access and refresh tokens in localStorage
+        const accessToken = data.accessToken || data.token;
+        if (accessToken) {
+          localStorage.setItem('accessToken', accessToken);
+          // legacy alias for components that still read `token`
+          localStorage.setItem('token', accessToken);
+        }
+        if (data.refreshToken) {
+          localStorage.setItem('refreshToken', data.refreshToken);
+        }
 
-
-        // Call parent function if needed
+        // Call parent function if needed (pass the current access token)
         if (onAuthSuccess) {
-          onAuthSuccess(data.token, data.user);
+          onAuthSuccess(accessToken, data.user);
         }
 
         // Navigate based on role

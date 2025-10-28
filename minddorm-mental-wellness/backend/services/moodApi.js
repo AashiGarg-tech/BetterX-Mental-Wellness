@@ -1,11 +1,11 @@
 // services/moodApi.js
+import apiClient from '../../src/utils/apiClient';
+
 export const saveMoodEntry = async (moodData) => {
   try {
-    const token = localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5050/api/mood/entry', {
+    const response = await apiClient.fetchWithAuth('/api/mood/entry', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -25,10 +25,8 @@ export const saveMoodEntry = async (moodData) => {
 
 export const getMoodStats = async () => {
   try {
-    const token = localStorage.getItem('authToken');
-    const response = await fetch('http://localhost:5050/api/mood/stats', {
+    const response = await apiClient.fetchWithAuth('/api/mood/stats', {
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     });

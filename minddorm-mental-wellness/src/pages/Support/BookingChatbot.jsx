@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../../utils/apiClient';
 
 const API_BASE_URL = 'http://localhost:5050/api'; 
 
 // --- CONCEPTUAL AUTH HOOK (To be replaced with your actual hook) ---
 // Note: This mock is required for the component to compile in isolation.
 const useAuth = () => {
-    // Reads the live token from storage
-    const token = localStorage.getItem('authToken'); 
+    // Reads the live token from storage (accessToken preferred)
+    const token = localStorage.getItem('accessToken') || localStorage.getItem('token'); 
     
     // MOCK: User data derived from token payload
     const [user] = useState({ 
@@ -36,7 +37,7 @@ const ChatMessage = ({ sender, text }) => (
 
 const fetchRealAvailability = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/counsellors/availability`);
+        const response = await apiClient.fetchWithAuth('/api/counsellors/availability');
         if (!response.ok) throw new Error('Network response was not ok');
         return await response.json();
     } catch (error) {
@@ -45,20 +46,15 @@ const fetchRealAvailability = async () => {
     }
 };
 
-const submitRealBooking = async (bookingDetails, token) => {
+const submitRealBooking = async (bookingDetails) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/bookings/create`, {
+        const response = await apiClient.fetchWithAuth('/api/bookings/create', {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
             body: JSON.stringify({
-                schedule_id: bookingDetails.scheduleId, 
-                student_name: bookingDetails.studentName,
+                schedule_id: bookingDetails.scheduleId || bookingDetails.schedule_id, 
+                student_name: bookingDetails.studentName || bookingDetails.student_name,
             }),
         });
-        
         return await response.json();
     } catch (error) {
         return { success: false, message: "A network error occurred while submitting the booking." };

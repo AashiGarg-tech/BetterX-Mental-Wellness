@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FileText, ChevronDown, Loader2 } from 'lucide-react';
+import apiClient from '../../utils/apiClient';
 import { format, subDays, isBefore } from 'date-fns';
 
 // Constants
@@ -65,23 +66,11 @@ const AssessmentHistory = () => {
   const lastFetchKey = 'lastAssessmentFetch';
 
   const fetchAssessmentHistory = async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      setError("User not logged in.");
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fetch("http://localhost:5050/api/assessment/history", {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.fetchWithAuth("/api/assessment/history");
 
       if (!response.ok) {
         throw new Error("Failed to fetch assessment history.");
