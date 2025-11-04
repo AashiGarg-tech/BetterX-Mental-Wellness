@@ -11,11 +11,18 @@ import CommunityHeader from './CommunityHeader';
 const AnnouncementsPage = () => {
   const announcements = [
     {
-      id: 1,
-      title: 'October 10 – World Mental Health Day',
+      id: 5,
+      title: 'November 15-22 – Art for Awareness Week (suggested date)',
       description:
-        "Today, we're hosting live sessions and gentle yoga to honor this day. Join us to reflect, connect, and breathe.",
-      icon: <HeartIcon className="h-6 w-6 text-[#2B5A7A]" />
+        "Express what words can't. Submit your artwork to help others feel seen and understood.",
+      icon: <PencilIcon className="h-6 w-6 text-[#2B5A7A]" />
+    },
+    {
+      id: 4,
+      title: 'May – Mental Health Awareness Month',
+      description:
+        'A full month to run student-led campaigns, share resources, and create safe spaces for open conversations.',
+      icon: <CalendarIcon className="h-6 w-6 text-[#2B5A7A]" />
     },
     {
       id: 2,
@@ -32,18 +39,11 @@ const AnnouncementsPage = () => {
       icon: <SparklesIcon className="h-6 w-6 text-[#2B5A7A]" />
     },
     {
-      id: 4,
-      title: 'May – Mental Health Awareness Month',
+      id: 1,
+      title: 'October 10 – World Mental Health Day',
       description:
-        'A full month to run student-led campaigns, share resources, and create safe spaces for open conversations.',
-      icon: <CalendarIcon className="h-6 w-6 text-[#2B5A7A]" />
-    },
-    {
-      id: 5,
-      title: 'November 15-22 – Art for Awareness Week (suggested date)',
-      description:
-        "Express what words can't. Submit your artwork to help others feel seen and understood.",
-      icon: <PencilIcon className="h-6 w-6 text-[#2B5A7A]" />
+        "Today, we're hosting live sessions and gentle yoga to honor this day. Join us to reflect, connect, and breathe.",
+      icon: <HeartIcon className="h-6 w-6 text-[#2B5A7A]" />
     }
   ];
 
@@ -65,7 +65,6 @@ const AnnouncementsPage = () => {
                 <p className="text-sm text-gray-500">Stay updated with community events and news</p>
               </div>
             </div>
-        
           </div>
 
           <div className="space-y-6">
@@ -90,8 +89,8 @@ const AnnouncementsPage = () => {
 
         {/* Footer */}
         <footer className="text-center mt-10 text-gray-600 text-sm">
-                <p>Don't worry Be happy</p>
-            </footer>
+          <p>Don't worry Be happy</p>
+        </footer>
       </div>
     </div>
   );
