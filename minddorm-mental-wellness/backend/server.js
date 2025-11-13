@@ -573,7 +573,7 @@ app.get('/api/staff/my-bookings', authenticateToken, async (req, res) => {
             [counselorEmail]
         );
         
-        if (counsellorResult.rows.length === 0) {
+        if (counselorResult.rows.length === 0) {
             // This happens if a user with 'counsellor' role is not in the 'counsellors' table
             // This is a 404, not a 500, which is correct error handling.
             return res.status(404).json({ error: "Counselor profile not found in database." });

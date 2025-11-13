@@ -76,7 +76,7 @@ const CounselorScheduleView = ({ userEmail }) => {
             </div>
 
             <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                <h2 className="text-xl font-medium text-gray-700 mb-4">Upcoming Sessions: **{myBookings.length}**</h2>
+                <h2 className="text-xl font-medium text-gray-700 mb-4">Upcoming Sessions: {myBookings.length}</h2>
                 
                 {myBookings.length === 0 ? (
                     <div className="text-center py-10 text-gray-500 border-t border-gray-200">
@@ -175,9 +175,7 @@ const AdminDashboard = ({ currentUser }) => {
         </div>
 
         {/* 5. ENGAGEMENT ANALYTICS SECTION (Grid Layout) */}
-        <div className="mb-8">
-            <EngagementCard />
-        </div>
+        
         
         {/* Footer Text */}
         <div className="text-center mt-12 text-gray-400">

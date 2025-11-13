@@ -142,6 +142,7 @@
 
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
+
 import Header from "./components/Header.jsx";
 import AuthPage from "./pages/LoginPage/AuthPage.jsx";
 
@@ -174,11 +175,16 @@ import PSSAssessment from "./pages/TrackMood/PSS.jsx";
 import PHQ9Assessment from "./pages/TrackMood/PHQ-9.jsx";
 import GAD7Assessment from "./pages/TrackMood/GAD-7.jsx";
 
+// ----------------------------------------------------
 // Protected Route Wrapper
+// ----------------------------------------------------
 const ProtectedRoute = ({ isLoggedIn, children }) => {
   return isLoggedIn ? children : <Navigate to="/" replace />;
 };
 
+// ----------------------------------------------------
+// DEFAULT LAYOUT (with navbar)
+// ----------------------------------------------------
 const ProtectedLayout = ({ onSignOut }) => (
   <>
     <Header onSignOut={onSignOut} />
@@ -188,53 +194,60 @@ const ProtectedLayout = ({ onSignOut }) => (
   </>
 );
 
+// ----------------------------------------------------
+// ADMIN LAYOUT (minimal header)
+// ----------------------------------------------------
+const AdminLayout = ({ onSignOut }) => (
+  <>
+    <Header onSignOut={onSignOut} isAdmin={true} />
+    <main className="p-4">
+      <Outlet />
+    </main>
+  </>
+);
+
+// ----------------------------------------------------
+// MAIN APP LOGIC
+// ----------------------------------------------------
 const AppContent = () => {
-  // Authentication state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authToken, setAuthToken] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Handle successful authentication
   const handleAuthSuccess = (token, user) => {
     setIsLoggedIn(true);
     setAuthToken(token);
     setCurrentUser(user);
-    // You might want to store the token in localStorage here as well, 
-    // as your CounselorScheduleView component relies on it.
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
   };
 
-  // Handle sign out
   const handleSignOut = () => {
     setIsLoggedIn(false);
     setAuthToken(null);
     setCurrentUser(null);
-    localStorage.removeItem('token'); // Clear token on sign out
+    localStorage.removeItem("token");
   };
 
   return (
     <div className="min-h-screen font-sans bg-gradient-to-b from-[#B5D8EB] to-[#F4F8FB]">
       <Routes>
-        {/* Public Route - Login/Signup */}
-        <Route 
-          path="/" 
+
+        {/* ----------------- PUBLIC ROUTES ----------------- */}
+        <Route
+          path="/"
           element={
             isLoggedIn ? (
               <Navigate to="/HomePage" replace />
             ) : (
               <AuthPage onAuthSuccess={handleAuthSuccess} />
             )
-          } 
+          }
         />
 
-        {/* === TEMPORARY: Public access to ChatPage for testing ===
-            Placed outside protected routes so you can open /ChatPage
-            directly without logging in. Remove or move this back inside
-            ProtectedRoute when you re-enable auth protection. */}
         <Route path="/ChatPage" element={<ChatPage />} />
 
-        {/* Protected Routes (require login) */}
-        <Route 
+        {/* ----------------- USER ROUTES (WITH NAVBAR) ----------------- */}
+        <Route
           element={
             <ProtectedRoute isLoggedIn={isLoggedIn}>
               <ProtectedLayout onSignOut={handleSignOut} />
@@ -258,28 +271,47 @@ const AppContent = () => {
           <Route path="/PHQ9Assessment" element={<PHQ9Assessment />} />
           <Route path="/GAD7Assessment" element={<GAD7Assessment />} />
           <Route path="/WellnessDashboard" element={<WellnessDashboard />} />
-          <Route 
-            path="/UserProfile" 
+
+          <Route
+            path="/UserProfile"
             element={
-              <UserProfile 
+              <UserProfile
                 user={currentUser}
                 token={authToken}
                 onUpdateProfile={(updatedUser) => setCurrentUser(updatedUser)}
               />
-            } 
+            }
           />
-          {/* FIX APPLIED HERE: Pass currentUser as a prop to AdminDashboard */}
-          <Route 
-            path="/AdminDashboard" 
-            element={<AdminDashboard currentUser={currentUser} />} 
-          />
+
           <Route path="/lifeline" element={<CallAway />} />
           <Route path="/find-wellness" element={<PathwaysToWellness />} />
           <Route path="/CommunityHeader" element={<CommunityHeader />} />
         </Route>
 
-        {/* 404 Page */}
-        <Route path="*" element={<div className="text-center py-20 text-gray-600 text-xl">🚧 Page Not Found</div>} />
+        {/* ----------------- ADMIN ROUTES (MINIMAL HEADER) ----------------- */}
+        <Route
+          element={
+            <ProtectedRoute isLoggedIn={isLoggedIn}>
+              <AdminLayout onSignOut={handleSignOut} />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="/AdminDashboard"
+            element={<AdminDashboard currentUser={currentUser} />}
+          />
+        </Route>
+
+        {/* ----------------- 404 ----------------- */}
+        <Route
+          path="*"
+          element={
+            <div className="text-center py-20 text-gray-600 text-xl">
+              🚧 Page Not Found
+            </div>
+          }
+        />
+
       </Routes>
     </div>
   );
