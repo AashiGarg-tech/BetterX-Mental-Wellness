@@ -353,6 +353,39 @@ app.get('/api/bookings/my-appointments', authenticateToken, async (req, res) => 
     }
 });
 
+app.get('/api/bookings/my-past-sessions', authenticateToken, async (req, res) => {
+    const studentEnrollmentNumber = req.userId; 
+
+    try {
+        const query = `
+            SELECT
+                br.booking_id,
+                br.status,
+                c.name AS counsellor_name,
+                c.title AS counsellor_title,
+                cs.schedule_date,
+                cs.schedule_time
+            FROM 
+                booking_records br
+            JOIN 
+                counsellor_schedule cs ON br.schedule_id = cs.schedule_id
+            JOIN 
+                counsellors c ON cs.counsellor_id = c.counsellor_id
+            WHERE 
+                br.student_id = $1
+                AND cs.schedule_date < CURRENT_DATE -- Only past dates
+                AND br.status IN ('Completed', 'Confirmed') 
+            ORDER BY 
+                cs.schedule_date DESC, cs.schedule_time DESC; 
+        `;
+        const { rows } = await pool.query(query, [studentEnrollmentNumber]);
+        res.json(rows);
+    } catch (err) {
+        console.error("Error fetching secure past student sessions:", err);
+        res.status(500).json({ error: "Failed to retrieve past session history." });
+    }
+});
+
 
 // 3. 🔒 POST /api/bookings/create (Requires JWT + Transaction)
 app.post('/api/bookings/create', authenticateToken, async (req, res) => {
