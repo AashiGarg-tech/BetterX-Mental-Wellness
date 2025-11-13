@@ -51,17 +51,19 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
+    // This warning should already be in your console if the secret is missing
     console.error("FATAL ERROR: JWT_SECRET is not defined in .env file.");
 }
 
 /**
  * Middleware to authenticate requests using JWT.
- * FIX: Ensure we extract the correct ID key from the payload (ID or user_id).
+ * It is CRUCIAL that this extracts the 'role' to support Role-Based Access Control (RBAC).
  */
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        // 401: Token missing or improperly formatted
         return res.status(401).json({ message: 'Access denied. Authentication token missing or invalid format.' });
     }
 
@@ -70,24 +72,32 @@ const authenticateToken = (req, res, next) => {
     jwt.verify(token, JWT_SECRET, (err, decodedPayload) => {
         if (err) {
             console.warn("JWT Verification Failed:", err.message);
-            // Distinguish between expired token and other verification failures.
+            
+            // 401 for expired token (requiring re-login)
             if (err.name === 'TokenExpiredError') {
                 return res.status(401).json({ message: 'Token expired' });
             }
+            
+            // 403 for other invalid tokens (verification failures)
             return res.status(403).json({ message: 'Invalid token.' });
         }
 
         // --- THE CRITICAL FIX ---
-        // Prioritize 'id' but fallback to 'user_id' if needed.
+        
+        // 1. Get User ID
         const userId = decodedPayload.id || decodedPayload.user_id; 
         
-        if (!userId) {
-             return res.status(403).json({ message: 'Invalid token structure: User ID not found in payload.' });
+        // 2. Get User Role (This is what the authenticateSuperAdmin middleware needs)
+        const userRole = decodedPayload.role; 
+        
+        if (!userId || !userRole) {
+             return res.status(403).json({ message: 'Invalid token structure: User ID or Role not found in payload.' });
         }
 
-        // Attach user ID to request
+        // Attach user ID and ROLE to request
         req.userId = userId;
-
+        req.userRole = userRole; // <-- This property enables Super Admin check
+        req.userEmail = decodedPayload.email;
         next();
     });
 };

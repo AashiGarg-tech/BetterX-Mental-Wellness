@@ -484,7 +484,7 @@ const AuthPage = ({ onAuthSuccess }) => {
 
         // Navigate based on role
         setTimeout(() => {
-          if (data.user.role === 'counsellor') {
+          if (data.user.role === 'counsellor' || data.user.role === 'superadmin') {
             navigate('/AdminDashboard');
           } else {
             navigate('/HomePage');

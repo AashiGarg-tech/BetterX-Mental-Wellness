@@ -142,37 +142,37 @@
 
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import Header from "./components/Header";
-import AuthPage from "./pages/LoginPage/AuthPage";
+import Header from "./components/Header.jsx";
+import AuthPage from "./pages/LoginPage/AuthPage.jsx";
 
-import HomePage from "./pages/Home/HomePage";
-import SupportPage from "./pages/Support/SupportPage";  
-import WellnessCard from "./pages/Support/WellnessCard";
-import ResourceIcon from "./pages/Support/ResourceIcon";  
-import CallAway from "./pages/Support/CallAway";
-import PathwaysToWellness from "./pages/Support/PathwaysToWellness";
-import BookingChatbot from "./pages/Support/BookingChatbot";
+import HomePage from "./pages/Home/HomePage.jsx";
+import SupportPage from "./pages/Support/SupportPage.jsx";  
+import WellnessCard from "./pages/Support/WellnessCard.jsx";
+import ResourceIcon from "./pages/Support/ResourceIcon.jsx";  
+import CallAway from "./pages/Support/CallAway.jsx";
+import PathwaysToWellness from "./pages/Support/PathwaysToWellness.jsx";
+import BookingChatbot from "./pages/Support/BookingChatbot.jsx";
 
-import SupportOptions from "./pages/Resources/support_condition";
-import ArticlesPage from "./pages/Resources/articles_page";
-import AudioPage from "./pages/Resources/audio_page";
-import VideoPage from "./pages/Resources/video_page";
+import SupportOptions from "./pages/Resources/support_condition.jsx";
+import ArticlesPage from "./pages/Resources/articles_page.jsx";
+import AudioPage from "./pages/Resources/audio_page.jsx";
+import VideoPage from "./pages/Resources/video_page.jsx";
 
-import WellnessDashboard from "./pages/UserDashboard/WellnessDashboard";
-import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
+import WellnessDashboard from "./pages/UserDashboard/WellnessDashboard.jsx";
+import AdminDashboard from "./pages/AdminDashboard/AdminDashboard.jsx";
 
-import AnnouncementsPage from "./pages/Community/AnnouncementsPage";
-import ListenLearnPage from "./pages/Community/ListenLearnPage";
-import ReachOutPage from "./pages/Community/ReachOutPage";
-import CommunityHeader from "./pages/Community/CommunityHeader";
+import AnnouncementsPage from "./pages/Community/AnnouncementsPage.jsx";
+import ListenLearnPage from "./pages/Community/ListenLearnPage.jsx";
+import ReachOutPage from "./pages/Community/ReachOutPage.jsx";
+import CommunityHeader from "./pages/Community/CommunityHeader.jsx";
 
-import ChatPage from "./pages/ChatBot/ChatPage";
-import UserProfile from "./components/UserProfile";
+import ChatPage from "./pages/ChatBot/ChatPage.jsx";
+import UserProfile from "./components/UserProfile.jsx";
 
-import TrackMoodPage from "./pages/TrackMood/TrackMoodPage";
-import PSSAssessment from "./pages/TrackMood/PSS";
-import PHQ9Assessment from "./pages/TrackMood/PHQ-9";
-import GAD7Assessment from "./pages/TrackMood/GAD-7";
+import TrackMoodPage from "./pages/TrackMood/TrackMoodPage.jsx";
+import PSSAssessment from "./pages/TrackMood/PSS.jsx";
+import PHQ9Assessment from "./pages/TrackMood/PHQ-9.jsx";
+import GAD7Assessment from "./pages/TrackMood/GAD-7.jsx";
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ isLoggedIn, children }) => {
@@ -199,6 +199,9 @@ const AppContent = () => {
     setIsLoggedIn(true);
     setAuthToken(token);
     setCurrentUser(user);
+    // You might want to store the token in localStorage here as well, 
+    // as your CounselorScheduleView component relies on it.
+    localStorage.setItem('token', token);
   };
 
   // Handle sign out
@@ -206,6 +209,7 @@ const AppContent = () => {
     setIsLoggedIn(false);
     setAuthToken(null);
     setCurrentUser(null);
+    localStorage.removeItem('token'); // Clear token on sign out
   };
 
   return (
@@ -264,7 +268,11 @@ const AppContent = () => {
               />
             } 
           />
-          <Route path="/AdminDashboard" element={<AdminDashboard />} />
+          {/* FIX APPLIED HERE: Pass currentUser as a prop to AdminDashboard */}
+          <Route 
+            path="/AdminDashboard" 
+            element={<AdminDashboard currentUser={currentUser} />} 
+          />
           <Route path="/lifeline" element={<CallAway />} />
           <Route path="/find-wellness" element={<PathwaysToWellness />} />
           <Route path="/CommunityHeader" element={<CommunityHeader />} />

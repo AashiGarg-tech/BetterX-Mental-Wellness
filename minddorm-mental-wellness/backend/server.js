@@ -244,7 +244,7 @@ import moodRoutes from "./routes/moodRoutes.js";
 import userStatsRoutes from "./routes/userStatsRoutes.js";
 
 import pool from "./config/db.js"; 
-// ⚠️ NEW: Import the authentication middleware
+// ⚠️ IMPORTANT: Assuming you have this middleware
 import authenticateToken from './middleware/authenticateToken.js'; 
 
 // CRITICAL FIX: Call dotenv.config() immediately after ALL imports
@@ -253,10 +253,10 @@ dotenv.config();
 const app = express();
 const PORT = 5050;
 
-// ✅ Allow frontend to connect (adjust port if needed)
+// Middleware for parsing and CORS
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(bodyParser.json());
-app.use(express.json()); // Ensure Express's parser is active
+app.use(express.json());
 
 // 🔌 MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -265,7 +265,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 }).then(() => console.log("✅ Connected to MongoDB"))
   .catch(err => console.error("❌ MongoDB error:", err));
 
-// Ensure refresh_tokens table exists in Postgres so refresh-token storage works reliably.
+// Ensure refresh_tokens table exists in Postgres
 async function ensureRefreshTokensTable() {
     try {
         const createSql = `
@@ -280,12 +280,24 @@ async function ensureRefreshTokensTable() {
         console.log('✅ refresh_tokens table ensured');
     } catch (err) {
         console.warn('Could not ensure refresh_tokens table at startup:', err.message);
-        // Don't crash the server — the auth route already falls back to in-memory store.
     }
 }
-
-// Call the ensure function at startup (non-blocking)
 ensureRefreshTokensTable();
+
+// ----------------------------------------------------
+//         🛡️ ROLE CHECK MIDDLEWARE 
+// ----------------------------------------------------
+
+/**
+ * Middleware to check if the authenticated user has the 'superadmin' role.
+ */
+const authenticateSuperAdmin = (req, res, next) => {
+    // If authenticateToken didn't run or didn't attach the role, deny access.
+    if (!req.userRole || req.userRole !== 'superadmin') {
+        return res.status(403).json({ success: false, message: "Forbidden: Super Admin access required." });
+    }
+    next();
+};
 
 // ----------------------------------------------------
 //          🛡️ COUNSELLING BOOKING ROUTES (PostgreSQL)
@@ -307,7 +319,7 @@ app.get('/api/counsellors/availability', async (req, res) => {
                 counsellors c ON cs.counsellor_id = c.counsellor_id
             WHERE 
                 cs.is_booked = FALSE
-                AND cs.schedule_date >= CURRENT_DATE
+                AND (cs.schedule_date + cs.schedule_time) >= NOW() 
             ORDER BY 
                 cs.schedule_date ASC, cs.schedule_time ASC;
         `;
@@ -341,7 +353,7 @@ app.get('/api/bookings/my-appointments', authenticateToken, async (req, res) => 
                 counsellors c ON cs.counsellor_id = c.counsellor_id
             WHERE 
                 br.student_id = $1
-                AND cs.schedule_date >= CURRENT_DATE
+                AND (cs.schedule_date + cs.schedule_time) >= NOW() 
             ORDER BY 
                 cs.schedule_date ASC, cs.schedule_time ASC;
         `;
@@ -373,7 +385,7 @@ app.get('/api/bookings/my-past-sessions', authenticateToken, async (req, res) =>
                 counsellors c ON cs.counsellor_id = c.counsellor_id
             WHERE 
                 br.student_id = $1
-                AND cs.schedule_date < CURRENT_DATE -- Only past dates
+                AND (cs.schedule_date + cs.schedule_time) < NOW() 
                 AND br.status IN ('Completed', 'Confirmed') 
             ORDER BY 
                 cs.schedule_date DESC, cs.schedule_time DESC; 
@@ -447,6 +459,155 @@ app.post('/api/bookings/create', authenticateToken, async (req, res) => {
         res.status(500).json({ success: false, message: "An internal server error occurred during booking." });
     } finally {
         client.release(); 
+    }
+});
+
+// ----------------------------------------------------
+//         👑 SUPER ADMIN BOOKING ROUTES 
+// ----------------------------------------------------
+
+// 4. 🔒 GET /api/admin/all-booked-slots
+app.get('/api/admin/all-booked-slots', authenticateToken, authenticateSuperAdmin, async (req, res) => {
+    try {
+        const query = `
+            SELECT
+                cs.schedule_date AS date,
+                cs.schedule_time AS time,
+                c.counsellor_id, 
+                c.name AS counselor_name,
+                c.title AS specialization
+            FROM 
+                counsellor_schedule cs
+            JOIN 
+                counsellors c ON cs.counsellor_id = c.counsellor_id
+            JOIN
+                booking_records br ON cs.schedule_id = br.schedule_id 
+            WHERE 
+                cs.is_booked = TRUE 
+                AND (cs.schedule_date + cs.schedule_time) >= NOW() 
+                AND br.status = 'Confirmed'
+            ORDER BY 
+                cs.schedule_date ASC, cs.schedule_time ASC;
+        `;
+        const { rows } = await pool.query(query);
+
+        // Map and format the results for the frontend
+        const slots = rows.map(row => ({
+            date: row.date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+            time: row.time,
+            counsellor_id: row.counsellor_id, // Pass ID for filtering
+            counselor_name: row.counselor_name,
+            specialization: row.specialization
+        }));
+        
+        res.json({ slots });
+    } catch (err) {
+        console.error("Error fetching all booked slots for admin:", err);
+        res.status(500).json({ error: "Failed to fetch global booked schedule data." });
+    }
+});
+
+// 5. 🔒 GET /api/admin/counselors-roster-with-load
+app.get('/api/admin/counselors-roster-with-load', authenticateToken, authenticateSuperAdmin, async (req, res) => {
+    try {
+        const query = `
+            SELECT
+                c.counsellor_id AS id,
+                c.name,
+                c.title AS specialization,
+                c.contact_email,
+                COUNT(br.booking_id) AS "activeBookings"
+            FROM
+                counsellors c
+            LEFT JOIN
+                counsellor_schedule cs ON c.counsellor_id = cs.counsellor_id
+            LEFT JOIN
+                booking_records br ON cs.schedule_id = br.schedule_id
+                                    AND (cs.schedule_date + cs.schedule_time) >= NOW() 
+                                    AND br.status = 'Confirmed'
+            GROUP BY
+                c.counsellor_id, c.name, c.title, c.contact_email
+            ORDER BY
+                c.name;
+        `;
+        const { rows } = await pool.query(query);
+
+        // Map the contact_email to a generic 'email' key for frontend consistency
+        const roster = rows.map(row => ({
+            ...row,
+            email: row.contact_email // Keep the frontend expecting 'email'
+        }));
+
+        res.json({ roster: roster });
+    } catch (err) {
+        console.error("Error fetching counselor roster with load:", err);
+        res.status(500).json({ error: "Failed to fetch counselor management data." });
+    }
+});
+
+
+// ----------------------------------------------------
+//         🧑‍💼 COUNSELOR PORTAL ROUTE (NEW)
+// ----------------------------------------------------
+
+// 6. 🔒 GET /api/staff/my-bookings
+app.get('/api/staff/my-bookings', authenticateToken, async (req, res) => {
+    // CRITICAL: Ensure authenticateToken middleware attaches email and role
+    const counselorEmail = req.userEmail;
+    const userRole = req.userRole;
+
+    if (userRole !== 'counsellor' && userRole !== 'superadmin') {
+        return res.status(403).json({ success: false, message: "Access Denied. Only counselors can view this portal." });
+    }
+
+    // ⭐ FIX: Prevent server crash if the email is missing from the token payload
+    if (!counselorEmail) {
+        console.error("Authentication Error: Token payload is missing user email (req.userEmail).");
+        return res.status(401).json({ error: "Authentication details incomplete. Please re-login." });
+    }
+
+    try {
+        // 1. Find the counsellor_id using the email
+        const counselorResult = await pool.query(
+            'SELECT counsellor_id FROM counsellors WHERE contact_email = $1',
+            [counselorEmail]
+        );
+        
+        if (counsellorResult.rows.length === 0) {
+            // This happens if a user with 'counsellor' role is not in the 'counsellors' table
+            // This is a 404, not a 500, which is correct error handling.
+            return res.status(404).json({ error: "Counselor profile not found in database." });
+        }
+        
+        const counsellorId = counselorResult.rows[0].counsellor_id;
+
+        // 2. Fetch only the appointments tied to that counsellor_id
+        const query = `
+            SELECT
+                cs.schedule_date AS date,
+                cs.schedule_time AS time,
+                br.student_name,  -- Counselor needs to see who they are meeting
+                br.status
+            FROM 
+                counsellor_schedule cs
+            JOIN 
+                booking_records br ON cs.schedule_id = br.schedule_id
+            WHERE 
+                cs.counsellor_id = $1 
+                AND cs.is_booked = TRUE
+                -- Only show appointments that haven't passed
+                AND (cs.schedule_date + cs.schedule_time) >= NOW() 
+            ORDER BY 
+                cs.schedule_date ASC, cs.schedule_time ASC;
+        `;
+        const { rows } = await pool.query(query, [counsellorId]);
+        
+        // Rows contain only the logged-in counselor's upcoming appointments
+        res.json({ bookings: rows });
+    } catch (err) {
+        console.error("Error fetching secure counselor bookings:", err);
+        // Fallback for general database errors
+        res.status(500).json({ error: "Failed to retrieve personal schedule due to internal server error." });
     }
 });
 
