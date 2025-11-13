@@ -4,7 +4,8 @@ import axios from "axios";
 import StatCard from "./StatCard.jsx";
 import ChartCard from './ChartCard'; 
 import CounsellorBookingsOverview from './CounsellorBookingsOverview';
-import EngagementCard from './EngagementCard'; 
+import PastSessions from './PastSessions';
+import CounsellorPastSessions from "./CounsellorPastSessions";
 
 // Define the API base URL for staff endpoints
 const API_BASE_URL = 'http://localhost:5050/api/staff';
@@ -129,6 +130,9 @@ const AdminDashboard = ({ currentUser }) => {
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#B5D8EB] to-[#F4F8FB] font-sans p-8">
             <CounselorScheduleView userEmail={currentUser.email} />
+            <div className="mt-10 max-w-5xl mx-auto">
+              <CounsellorPastSessions />
+            </div>
         </div>
     );
   }
@@ -174,8 +178,9 @@ const AdminDashboard = ({ currentUser }) => {
             <CounsellorBookingsOverview />
         </div>
 
-        {/* 5. ENGAGEMENT ANALYTICS SECTION (Grid Layout) */}
-        
+        <div className="mb-8">
+          <PastSessions />
+        </div>
         
         {/* Footer Text */}
         <div className="text-center mt-12 text-gray-400">

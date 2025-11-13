@@ -545,6 +545,39 @@ app.get('/api/admin/counselors-roster-with-load', authenticateToken, authenticat
     }
 });
 
+// 6. 🔒 GET /api/admin/past-sessions (Super Admin Only)
+app.get('/api/admin/past-sessions', authenticateToken, authenticateSuperAdmin, async (req, res) => {
+    try {
+        const query = `
+            SELECT
+                TO_CHAR(cs.schedule_date, 'YYYY-MM-DD') AS date,
+                TO_CHAR(cs.schedule_time, 'HH24:MI') AS time,
+                c.name AS counsellor_name,
+                br.status
+            FROM 
+                booking_records br
+            JOIN 
+                counsellor_schedule cs ON br.schedule_id = cs.schedule_id
+            JOIN 
+                counsellors c ON cs.counsellor_id = c.counsellor_id
+            WHERE 
+                cs.is_booked = TRUE
+                AND (cs.schedule_date + cs.schedule_time) < NOW() 
+                AND br.status IN ('Completed', 'Confirmed')
+            ORDER BY 
+                cs.schedule_date DESC, cs.schedule_time DESC;
+        `;
+
+        const { rows } = await pool.query(query);
+
+        res.json({ pastSessions: rows });
+
+    } catch (err) {
+        console.error("Error fetching admin past sessions:", err);
+        res.status(500).json({ error: "Failed to fetch past sessions." });
+    }
+});
+
 
 // ----------------------------------------------------
 //         🧑‍💼 COUNSELOR PORTAL ROUTE (NEW)
@@ -611,6 +644,54 @@ app.get('/api/staff/my-bookings', authenticateToken, async (req, res) => {
     }
 });
 
+// 🔒 GET /api/staff/my-past-sessions  (Counsellor Only)
+app.get('/api/staff/my-past-sessions', authenticateToken, async (req, res) => {
+    const counselorEmail = req.userEmail;
+    const userRole = req.userRole;
+
+    if (userRole !== 'counsellor') {
+        return res.status(403).json({ error: "Only counsellors can view this." });
+    }
+
+    try {
+        // Find counsellor_id from email
+        const result = await pool.query(
+            'SELECT counsellor_id FROM counsellors WHERE contact_email = $1',
+            [counselorEmail]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Counsellor not found." });
+        }
+
+        const counsellorId = result.rows[0].counsellor_id;
+
+        const query = `
+            SELECT
+                TO_CHAR(cs.schedule_date, 'YYYY-MM-DD') AS date,
+                TO_CHAR(cs.schedule_time, 'HH24:MI') AS time,
+                br.status
+            FROM 
+                counsellor_schedule cs
+            JOIN 
+                booking_records br ON cs.schedule_id = br.schedule_id
+            WHERE 
+                cs.counsellor_id = $1
+                AND cs.is_booked = TRUE
+                AND (cs.schedule_date + cs.schedule_time) < NOW()
+            ORDER BY 
+                cs.schedule_date DESC, cs.schedule_time DESC;
+        `;
+
+        const { rows } = await pool.query(query, [counsellorId]);
+
+        res.json({ pastSessions: rows });
+
+    } catch (err) {
+        console.error("Error fetching counsellor's past sessions:", err);
+        res.status(500).json({ error: "Internal server error." });
+    }
+});
 
 // ----------------------------------------------------
 //                ⚡ EXISTING ROUTES
