@@ -13,28 +13,28 @@ const getMapsUrl = (address) => {
 // Dummy data for the cards (matching the image)
 const wellnessCenters = [
   {
-    title: 'Campus Wellness Center',
-    address: '123 University Ave, Building A',
-    phone: '9899568987',
+    title: 'HopeCare India',
+    address: 'Kashmere Gate ,New Delhi',
+    phone: '9311112377',
     services: ['Counseling', 'Workshops', 'Support Groups'],
-    imageUrl: '/images/img1.jpg', 
-    directionsUrl: getMapsUrl('123 University Ave, Building A, Campus Wellness Center'),
+    imageUrl: '/images/pw1.jpg', 
+    directionsUrl: getMapsUrl(' H-5, Bawa Farm, Ansal Villas, Satbari, Chhatarpur, near Amar Das Gurudwara, New Delhi, Delhi 110068'),
   },
   {
-    title: 'Student Health Services',
-    address: '456 College Blvd, Health Center',
-    phone: '8788599999',
+    title: 'Smile Spreaders - for all your mental health needs',
+    address: 'Kalkaji, New Delhi',
+    phone: '07986604149',
     services: ['Referrals', 'Mental Health', 'Crisis Support'],
-    imageUrl: '/images/img2.jpeg', 
-    directionsUrl: getMapsUrl('456 College Blvd, Health Center, Student Health Services'),
+    imageUrl: '/images/pw2.jpeg', 
+    directionsUrl: getMapsUrl('LGF, Cabin - 1, F 57, Block F, Kalkaji, New Delhi, Delhi 110019'),
   },
   {
-    title: 'Community Mental Health Center',
-    address: '123 University Ave, Building A',
-    phone: '99545879998',
+    title: 'Jagruti Rehabilitation Centre',
+    address: 'Laxmi Nagar, Delhi',
+    phone: '9822207761',
     services: ['Therapy', 'Support Groups', 'Medication Management'],
-    imageUrl: '/images/img3.jpeg', 
-    directionsUrl: getMapsUrl('123 University Ave, Building A, Community Mental Health Center'),
+    imageUrl: '/images/pw3.jpeg', 
+    directionsUrl: getMapsUrl('Laxmi Nagar, Block S1, Nanakpura, Shakarpur, Delhi'),
   },
 ];
 
