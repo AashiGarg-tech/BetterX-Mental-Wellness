@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -142,7 +143,7 @@ const SupportPage = () => {
     };
 
     // Define the paths for the buttons and the new booking page
-    const PATH_HOME = '/HomePage';
+    const PATH_SUPPORT = '/SupportPage';
     const PATH_LIFELINE = '/lifeline';
     const PATH_WELLNESS = '/find-wellness';
     const PATH_BOOKING_CHATBOT = '/book-counselling'; 
@@ -151,7 +152,7 @@ const SupportPage = () => {
         <div className="min-h-screen bg-gradient-to-b from-[#B5D8EB] to-[#F4F8FB] font-sans">
             <div className="max-w-7xl mx-auto py-10 px-4">
             
-            {/* Header / Cylinder Navigation - RESTORED */}
+            {/* Header / Cylinder Navigation */}
             <header className="text-center mb-12 max-w-4xl mx-auto">
                 <h1 className="text-5xl font-semibold text-[#000459] mb-2">
                     Your Path To Inner Calm Starts Here
@@ -160,18 +161,18 @@ const SupportPage = () => {
                     Connect with compassionate experts and unlock personal support to mental wellness
                 </p>
                 
-                {/* CYLINDER NAVIGATION BLOCK - RESTORED */}
+                {/* CYLINDER NAVIGATION BLOCK */}
                 <div className="flex justify-center items-center p-2 rounded-full bg-white shadow-xl max-w-md mx-auto border-2 border-gray-100">
                     
-                    {/* EXPLORE GUIDES (Home) BUTTON */}
+                    {/* EXPLORE GUIDES (Support) BUTTON */}
                     <button 
-                        onClick={() => navigate(PATH_HOME)}
-                        className={`${getButtonClass(PATH_HOME)} flex items-center`}
+                        onClick={() => navigate(PATH_SUPPORT)}
+                        className={`${getButtonClass(PATH_SUPPORT)} flex items-center`}
                     >
                         <img 
                             src="/images/img23.png" 
                             alt="Guides Icon" 
-                            className={`w-4 h-4 mr-1 object-contain ${getIconClass(PATH_HOME)}`} 
+                            className={`w-4 h-4 mr-1 object-contain ${getIconClass(PATH_SUPPORT)}`} 
                         />
                         Explore Guides
                     </button>
@@ -204,25 +205,25 @@ const SupportPage = () => {
                 </div>
             </header>
             
-            {/* How to Get Started Section - RESTORED */}
+            {/* How to Get Started Section */}
             <section className="text-center mb-16 relative bg-white p-8 rounded-xl shadow-lg border border-gray-100 max-w-6xl mx-auto">
                 <h2 className="text-2xl font-semibold text-gray-800 mb-8">How to get started</h2>
                 
-                {/* Stacked Images on Left - RESTORED */}
+                {/* Stacked Images on Left */}
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 hidden md:block">
                     <img src="/images/img13.jpg" alt="avatar 1" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md mb-2" />
                     <img src="/images/img14.jpg" alt="avatar 2" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md mb-2 relative left-3" />
                     <img src="/images/img15.jpeg" alt="avatar 3" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md relative left-1" />
                 </div>
 
-                {/* Stacked Images on Right - RESTORED */}
+                {/* Stacked Images on Right */}
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:block">
                     <img src="/images/img13.jpg" alt="avatar 4" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md mb-2" />
                     <img src="/images/img14.jpg" alt="avatar 5" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md mb-2 relative -left-3" />
                     <img src="/images/img15.jpeg" alt="avatar 6" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-md relative -left-1" />
                 </div>
 
-                {/* STEPS IN ONE LINE - RESTORED */}
+                {/* STEPS IN ONE LINE */}
                 <div className="flex flex-wrap md:flex-nowrap justify-between items-start space-y-8 md:space-y-0 md:space-x-8 px-8">
                     {/* Step 1 */}
                     <div className="flex-1 w-full p-4">
@@ -258,7 +259,7 @@ const SupportPage = () => {
                 </h2>
                 <div className="flex justify-center space-x-4 mb-8">
                     
-                    {/* Connect with Counselor link - MODIFIED TO NAVIGATE */}
+                    {/* Connect with Counselor link */}
                     <button 
                         onClick={() => navigate(PATH_BOOKING_CHATBOT)} 
                         className="px-6 py-3 text-white font-semibold rounded-full bg-[#83acc1] hover:bg-[#c29fe0] transition shadow-md no-underline flex items-center justify-center"

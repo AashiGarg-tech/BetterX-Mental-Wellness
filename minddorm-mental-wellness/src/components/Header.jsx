@@ -7,7 +7,7 @@ import { Smile, UserCircle, LogOut, LayoutDashboard, User, Menu, X } from 'lucid
 const Header = ({ onSignOut, isAdmin = false }) => {
   const location = useLocation();
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false); 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // -----------------------------------------------
@@ -15,17 +15,17 @@ const Header = ({ onSignOut, isAdmin = false }) => {
   // -----------------------------------------------
   const navItems = isAdmin
     ? [
-        { name: 'Dashboard', href: '/AdminDashboard' }
-      ]
+      { name: 'Dashboard', href: '/AdminDashboard' }
+    ]
     : [
-        { name: 'Home', href: '/HomePage' },
-        { name: 'Support', href: '/SupportPage' },
-        { name: 'Chat', href: '/ChatPage' },
-        { name: 'Community', href: '/AnnouncementsPage' },
-        { name: 'Resources', href: '/ArticlesPage' },
-        { name: 'Track Mood', href: '/TrackMoodPage' },
-        { name: 'Dashboard', href: '/WellnessDashboard' },
-      ];
+      { name: 'Home', href: '/HomePage' },
+      { name: 'Support', href: '/SupportPage' },
+      { name: 'Chat', href: '/ChatPage' },
+      { name: 'Community', href: '/AnnouncementsPage' },
+      { name: 'Resources', href: '/ArticlesPage' },
+      { name: 'Track Mood', href: '/TrackMoodPage' },
+      { name: 'Dashboard', href: '/WellnessDashboard' },
+    ];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleMobileNav = () => setIsMobileNavOpen(!isMobileNavOpen);
@@ -47,9 +47,8 @@ const Header = ({ onSignOut, isAdmin = false }) => {
 
         {/* LOGO */}
         <div className="flex items-center space-x-2 text-blue-600 font-semibold text-lg ml-4">
-          <Smile className="w-6 h-6" />
-          <Link to={isAdmin ? "/AdminDashboard" : "/HomePage"} className="hover:text-blue-800 transition-colors">
-            BetterX
+          <Link to="/" className="hover:text-blue-800 transition-colors">
+            <img src="/logo.png" alt="BetterX Logo" className="h-8 w-auto" />
           </Link>
         </div>
 
@@ -71,11 +70,10 @@ const Header = ({ onSignOut, isAdmin = false }) => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`text-sm px-2 py-4 text-gray-600 hover:text-blue-500 transition-colors ${
-                  location.pathname === item.href
+                className={`text-sm px-2 py-4 text-gray-600 hover:text-blue-500 transition-colors ${location.pathname === item.href
                     ? 'font-semibold text-blue-700 border-b-2 border-blue-700'
                     : 'border-b-2 border-transparent hover:border-blue-200'
-                }`}
+                  }`}
               >
                 {item.name}
               </Link>
@@ -84,8 +82,8 @@ const Header = ({ onSignOut, isAdmin = false }) => {
 
           {/* PROFILE ICON + DROPDOWN (works same for admin & user) */}
           <div className="relative">
-            <button 
-              onClick={toggleMenu} 
+            <button
+              onClick={toggleMenu}
               className="p-1 rounded-full text-gray-700 hover:text-blue-600 focus:outline-none transition"
             >
               <UserCircle className="w-8 h-8" />
@@ -93,10 +91,10 @@ const Header = ({ onSignOut, isAdmin = false }) => {
 
             {isMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-30">
-                
+
                 {/* My Profile */}
-                <Link 
-                  to="/UserProfile" 
+                <Link
+                  to="/UserProfile"
                   onClick={handleLinkClick}
                   className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100"
                 >
@@ -105,8 +103,8 @@ const Header = ({ onSignOut, isAdmin = false }) => {
                 </Link>
 
                 {/* Dashboard Link — open user or admin dashboard */}
-                <Link 
-                  to={isAdmin ? "/AdminDashboard" : "/WellnessDashboard"} 
+                <Link
+                  to={isAdmin ? "/AdminDashboard" : "/WellnessDashboard"}
                   onClick={handleLinkClick}
                   className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100"
                 >
@@ -135,9 +133,8 @@ const Header = ({ onSignOut, isAdmin = false }) => {
       {!isAdmin && (
         <nav
           id="mobile-nav-menu"
-          className={`md:hidden absolute top-14 left-0 w-full bg-white shadow-xl transition-transform duration-300 z-40 ${
-            isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          className={`md:hidden absolute top-14 left-0 w-full bg-white shadow-xl transition-transform duration-300 z-40 ${isMobileNavOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
         >
           <div className="flex flex-col p-4 space-y-2">
             {navItems.map((item) => (
@@ -145,9 +142,8 @@ const Header = ({ onSignOut, isAdmin = false }) => {
                 key={item.name}
                 to={item.href}
                 onClick={handleLinkClick}
-                className={`block px-3 py-2 text-base rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition ${
-                  location.pathname === item.href ? 'font-semibold text-blue-700 bg-blue-100' : ''
-                }`}
+                className={`block px-3 py-2 text-base rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition ${location.pathname === item.href ? 'font-semibold text-blue-700 bg-blue-100' : ''
+                  }`}
               >
                 {item.name}
               </Link>

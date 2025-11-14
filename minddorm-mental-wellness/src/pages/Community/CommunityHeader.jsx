@@ -21,10 +21,8 @@ const CommunityHeader = ({ activeTab }) => {
         </div>
         <div className="text-right mt-4 sm:mt-0">
           <div className="relative">
-              <img src="#" alt="AI Assistant" className="w-40 md:w-40 relative z-10" />
+              <img src="/logo.png" alt="AI Assistant" className="w-40 md:w-40 relative z-10" />
         </div>
-          <p className="text-sm font-semibold text-[#2B5A7A]">BetterX</p>
-          <p className="text-xs text-slate-600">● xxxx members</p>
         </div>
       </div>
 
