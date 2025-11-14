@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { parseISO, format as formatDate } from "date-fns";
 // Assuming these are local to AdminDashboard directory based on your old code:
 import StatCard from "./StatCard.jsx";
 import ChartCard from './ChartCard'; 
@@ -59,6 +60,15 @@ const CounselorScheduleView = ({ userEmail }) => {
         fetchMyBookings();
     }, []);
 
+    const formatSessionDate = (dateStr) => {
+        try {
+            const date = parseISO(dateStr);
+            return formatDate(date, 'MMM dd, yyyy');
+        } catch (e) {
+            return dateStr;
+        }
+    };
+
     if (isLoading) {
         return <div className="p-8 text-center text-gray-500">Loading your schedule...</div>;
     }
@@ -92,18 +102,16 @@ const CounselorScheduleView = ({ userEmail }) => {
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Date</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Time</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Student Name</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {myBookings.map((booking, index) => (
                                     <tr key={index} className="hover:bg-indigo-50 transition duration-150">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{booking.date}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatSessionDate(booking.date)}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{booking.time}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[#7F56D9]">{booking.student_name}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800`}>
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800`}>
                                                 {booking.status}
                                             </span>
                                         </td>

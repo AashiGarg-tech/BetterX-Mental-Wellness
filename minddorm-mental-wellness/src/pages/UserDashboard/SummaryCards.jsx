@@ -107,20 +107,20 @@ const SummaryCards = () => {
         title="Current Streak"
         value={stats.currentStreak}
         unit="days"
-        bgColor="bg-teal-500"
+        bgColor="#7F56D9"
         textColor="text-white"
       />
       <SummaryCard
         title="Average Mood"
         value={stats.averageMood.toFixed(1)}
         unit="/5"
-        bgColor="bg-green-600"
+        bgColor="#F79009"
         textColor="text-white"
       />
       <SummaryCard
         title="Sessions attended"
         value={stats.sessionsAttended}
-        bgColor="bg-purple-600"
+        bgColor="#2970FF"
         textColor="text-white"
       />
     </div>
