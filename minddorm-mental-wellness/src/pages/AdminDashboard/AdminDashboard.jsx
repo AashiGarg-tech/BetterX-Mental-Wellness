@@ -3,6 +3,8 @@ import axios from "axios";
 // Assuming these are local to AdminDashboard directory based on your old code:
 import StatCard from "./StatCard.jsx";
 import ChartCard from './ChartCard'; 
+import UserGrowthChart from './UserGrowthChart';
+import PlatformMoodChart from './PlatformMoodChart';
 import CounsellorBookingsOverview from './CounsellorBookingsOverview';
 import PastSessions from './PastSessions';
 import CounsellorPastSessions from "./CounsellorPastSessions";
@@ -123,7 +125,39 @@ const CounselorScheduleView = ({ userEmail }) => {
 
 const AdminDashboard = ({ currentUser }) => {
   // Use the optional chaining operator (?) as currentUser might be null initially
-  const role = currentUser?.role; 
+  const role = currentUser?.role;
+  const [stats, setStats] = React.useState({
+    totalUsers: 0,
+    activeThisMonth: 0,
+    checkinsToday: 0,
+    assessmentsToday: 0
+  });
+  const [statsLoading, setStatsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const config = token
+          ? { headers: { Authorization: `Bearer ${token}` } }
+          : {};
+        
+        const response = await axios.get('http://localhost:5050/api/admin/dashboard-stats', config);
+        
+        if (response.data && response.data.success) {
+          setStats(response.data.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch dashboard stats:', err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    if (role === 'superadmin') {
+      fetchDashboardStats();
+    }
+  }, [role]);
 
   if (role === 'counsellor') {
     // Renders only the personal schedule view for Counselors
@@ -150,28 +184,39 @@ const AdminDashboard = ({ currentUser }) => {
 
         {/* 2. STAT CARDS SECTION (Visible only to Super Admin) */}
         <div className="flex flex-wrap gap-4 mb-8">
-          <StatCard title="Total Users" value="1287" colorClass="bg-[#7F56D9]" />
-          <StatCard title="Active this month" value="745" colorClass="bg-[#F79009]" />
-          <StatCard title="Check-ins Today" value="476" colorClass="bg-[#2970FF]" />
-          <StatCard title="Average Mood Score" value="3.8/5" colorClass="bg-[#4CAF50]" />
-          <StatCard title="Assessments Today" value="97" colorClass="bg-[#5C6BC0]" />
+          <StatCard 
+            title="Total Users" 
+            value={statsLoading ? '...' : stats.totalUsers} 
+            colorClass="bg-[#7F56D9]" 
+          />
+          <StatCard 
+            title="Active this month" 
+            value={statsLoading ? '...' : stats.activeThisMonth} 
+            colorClass="bg-[#F79009]" 
+          />
+          <StatCard 
+            title="Check-ins Today" 
+            value={statsLoading ? '...' : stats.checkinsToday} 
+            colorClass="bg-[#2970FF]" 
+          />
+          <StatCard 
+            title="Assessments Today" 
+            value={statsLoading ? '...' : stats.assessmentsToday} 
+            colorClass="bg-[#5C6BC0]" 
+          />
         </div>
 
         {/* 3. CHARTS SECTION (Visible only to Super Admin) */}
         <h2 className="text-xl font-semibold text-gray-700 mb-4">User Growth trends</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <ChartCard title="User Growth trends" icon="📈">
-            <div className="flex items-center justify-center h-full text-gray-400">
-              [Line Chart Placeholder]
-            </div>
-          </ChartCard>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <ChartCard title="User Growth trends" icon="📈">
+                        <UserGrowthChart />
+                    </ChartCard>
 
-          <ChartCard title="Platform mood score" icon="😊">
-            <div className="flex items-center justify-center h-full text-gray-400">
-              [Line Chart Placeholder]
-            </div>
-          </ChartCard>
-        </div>
+                    <ChartCard title="Platform mood score" icon="😊">
+                      <PlatformMoodChart />
+                    </ChartCard>
+                </div>
 
         {/* 4. COUNSELLOR DATA SECTION (Visible only to Super Admin, uses full overview) */}
         <div className="mb-8">

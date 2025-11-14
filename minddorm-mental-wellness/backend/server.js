@@ -578,6 +578,31 @@ app.get('/api/admin/past-sessions', authenticateToken, authenticateSuperAdmin, a
     }
 });
 
+// ----------------------------------------------------
+//    🔒 GET /api/admin/user-growth (Super Admin Only)
+//    Returns user signups aggregated by month (last 12 months)
+// ----------------------------------------------------
+app.get('/api/admin/user-growth', authenticateToken, authenticateSuperAdmin, async (req, res) => {
+    try {
+        const query = `
+            SELECT to_char(date_trunc('week', created_at), 'YYYY-MM-DD') AS week_start,
+                   COUNT(*)::int AS count
+            FROM users
+            WHERE created_at >= (CURRENT_DATE - INTERVAL '83 days')
+                AND role = 'user'
+            GROUP BY 1
+            ORDER BY 1;
+        `;
+
+        const { rows } = await pool.query(query);
+
+        res.json({ success: true, data: rows });
+    } catch (err) {
+        console.error('Error fetching user growth data:', err);
+        res.status(500).json({ success: false, message: 'Failed to fetch user growth data.' });
+    }
+});
+
 
 // ----------------------------------------------------
 //         🧑‍💼 COUNSELOR PORTAL ROUTE (NEW)
@@ -716,6 +741,70 @@ app.use("/api/assessment", assessmentRoutes(pool));
 app.use("/api/mood", moodRoutes(pool)); 
 app.use("/api/user-stats", userStatsRoutes(pool));
 
+// ----------------------------------------------------
+//    🔒 GET /api/admin/dashboard-stats (Super Admin Only)
+//    Returns all dashboard metrics: total users, active this month, check-ins today, assessments today
+// ----------------------------------------------------
+app.get('/api/admin/dashboard-stats', authenticateToken, authenticateSuperAdmin, async (req, res) => {
+    try {
+        // 1. Total users (role='user' only)
+        const totalUsersQuery = `
+            SELECT COUNT(*)::int as count
+            FROM users
+            WHERE role = 'user';
+        `;
+
+        // 2. Active users this month (users with mood entries in current month)
+        const activeThisMonthQuery = `
+            SELECT COUNT(DISTINCT user_id)::int as count
+            FROM mood_entries
+            WHERE DATE_TRUNC('month', check_in_date) = DATE_TRUNC('month', CURRENT_DATE)
+                AND user_id IN (SELECT id FROM users WHERE role = 'user');
+        `;
+
+        // 3. Check-ins today
+        const checkinsQuery = `
+            SELECT COUNT(*)::int as count
+            FROM mood_entries
+            WHERE DATE(check_in_date) = CURRENT_DATE
+                AND user_id IN (SELECT id FROM users WHERE role = 'user');
+        `;
+
+        // 4. Assessments completed today
+        const assessmentsQuery = `
+            SELECT COUNT(*)::int as count
+            FROM assessment_scores
+            WHERE DATE(taken_at) = CURRENT_DATE
+                AND user_id IN (SELECT id FROM users WHERE role = 'user');
+        `;
+
+        // Execute all queries in parallel
+        const [totalUsersResult, activeResult, checkinsResult, assessmentsResult] = await Promise.all([
+            pool.query(totalUsersQuery),
+            pool.query(activeThisMonthQuery),
+            pool.query(checkinsQuery),
+            pool.query(assessmentsQuery)
+        ]);
+
+        const totalUsers = totalUsersResult.rows[0].count || 0;
+        const activeThisMonth = activeResult.rows[0].count || 0;
+        const checkinsToday = checkinsResult.rows[0].count || 0;
+        const assessmentsToday = assessmentsResult.rows[0].count || 0;
+
+        res.json({
+            success: true,
+            data: {
+                totalUsers,
+                activeThisMonth,
+                checkinsToday,
+                assessmentsToday
+            }
+        });
+    } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        res.status(500).json({ success: false, message: 'Failed to fetch dashboard stats.' });
+    }
+});
 
 // 🤖 Chatbot Route (OpenAI)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -752,4 +841,30 @@ app.post("/api/chatbot", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`📡 Booking API endpoints active.`);
+});
+
+// ----------------------------------------------------
+// 🔒 GET /api/admin/mood-trend (Super Admin Only)
+// Returns average mood per month for the last 12 months (role='user' only)
+// ----------------------------------------------------
+app.get('/api/admin/mood-trend', authenticateToken, authenticateSuperAdmin, async (req, res) => {
+    try {
+                const query = `
+                        SELECT to_char(date_trunc('week', me.check_in_date), 'YYYY-MM-DD') AS week_start,
+                                     ROUND(AVG(me.mood_rating)::numeric, 1) AS avg_mood,
+                                     COUNT(*)::int AS entries
+                        FROM mood_entries me
+                        JOIN users u ON u.id = me.user_id
+                        WHERE me.check_in_date >= (CURRENT_DATE - INTERVAL '83 days')
+                            AND u.role = 'user'
+                        GROUP BY 1
+                        ORDER BY 1;
+                `;
+
+        const { rows } = await pool.query(query);
+        res.json({ success: true, data: rows });
+    } catch (err) {
+        console.error('Error fetching mood trend data:', err);
+        res.status(500).json({ success: false, message: 'Failed to fetch mood trend data.' });
+    }
 });
