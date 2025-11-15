@@ -1,15 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 const CommunityHeader = ({ activeTab }) => {
-  const [postText, setPostText] = useState('');
-
-  const handlePost = () => {
-    if (postText.trim()) {
-      console.log('Posting:', postText);
-      setPostText('');
-    }
-  };
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-6">
@@ -26,38 +18,6 @@ const CommunityHeader = ({ activeTab }) => {
         </div>
       </div>
 
-      {/* Post Input Section */}
-      <div className="bg-white rounded-2xl p-5 lg:p-6 mb-8 shadow-sm border border-slate-200">
-        <input
-          type="text"
-          placeholder="What's on your mind..."
-          value={postText}
-          onChange={(e) => setPostText(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handlePost()}
-          className="w-full px-4 py-2.5 border border-slate-300 rounded-full mb-3 text-sm focus:outline-none focus:border-[#E8A287]"
-        />
-        <button
-          type="button"
-          onClick={handlePost}
-          className="bg-[#E8A287] text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-[#D89277] transition"
-        >
-          POST
-        </button>
-
-        <div className="mt-4 pt-4 border-t border-slate-200">
-          <button
-            type="button"
-            className="bg-[#E8A287] text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-[#D89277] transition flex items-center gap-2"
-          >
-            Share your story
-            <span className="text-lg">+</span>
-          </button>
-          <p className="text-xs text-[#2B5A7A] mt-2">
-            Share your story, listen to others, or just breathe.<br />
-            No pressure.
-          </p>
-        </div>
-      </div>
 
       {/* Tab Navigation */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
