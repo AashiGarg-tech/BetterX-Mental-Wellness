@@ -60,7 +60,7 @@ const CommunityHeader = ({ activeTab }) => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-4">
         <Link
           to="/AnnouncementsPage"
           className={`p-5 rounded-2xl transition ${
@@ -75,19 +75,6 @@ const CommunityHeader = ({ activeTab }) => {
           </p>
         </Link>
 
-        <Link
-          to="/ListenLearnPage"
-          className={`p-5 rounded-2xl transition ${
-            activeTab === 'ListenLearnPage'
-              ? 'bg-[#E8F0FF] border-2 border-[#B8D4F1]'
-              : 'bg-gradient-to-b from-[#DEDEFF] to-white border border-slate-200 hover:shadow-md'
-          }`}
-        >
-          <h3 className="text-base lg:text-lg font-bold text-[#2B5A7A] mb-1.5">Listen & Learn</h3>
-          <p className="text-xs lg:text-sm text-slate-600">
-            Stories, insights, and gentle advice to feel understood.
-          </p>
-        </Link>
 
         <Link
           to="/ReachOutPage"
