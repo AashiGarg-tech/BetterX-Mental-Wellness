@@ -434,6 +434,15 @@ const AuthPage = ({ onAuthSuccess }) => {
     setError('');
     setSuccess('');
 
+    // Validate domain for user signup/login
+    // Allow @igdtuw.ac.in for regular users or superadmin@gmail.com for superadmin
+    const isValidDomain = formData.email.endsWith('@igdtuw.ac.in') || formData.email === 'superadmin@gmail.com';
+    if (!isValidDomain) {
+      setError('Only @igdtuw.ac.in email addresses are allowed');
+      setLoading(false);
+      return;
+    }
+
     const endpoint = isLogin
       ? 'http://localhost:5050/api/auth/login'
       : 'http://localhost:5050/api/auth/signup';
@@ -464,7 +473,6 @@ const AuthPage = ({ onAuthSuccess }) => {
 
       if (isLogin) {
         // ✅ Login successful
-        setSuccess('Login successful! Redirecting...');
 
         // 🔹 Store access and refresh tokens in localStorage
         const accessToken = data.accessToken || data.token;
@@ -477,19 +485,22 @@ const AuthPage = ({ onAuthSuccess }) => {
           localStorage.setItem('refreshToken', data.refreshToken);
         }
 
-        // Call parent function if needed (pass the current access token)
+        // Call parent function to update React state
         if (onAuthSuccess) {
           onAuthSuccess(accessToken, data.user);
         }
 
-        // Navigate based on role
-        setTimeout(() => {
-          if (data.user.role === 'counsellor' || data.user.role === 'superadmin') {
-            navigate('/AdminDashboard');
-          } else {
+        // Navigate based on role - counsellors and superadmins redirect immediately to AdminDashboard
+        if (data.user.role === 'counsellor' || data.user.role === 'superadmin') {
+          // Use setTimeout with 0ms to ensure state updates propagate, then navigate
+          setTimeout(() => navigate('/AdminDashboard'), 0);
+        } else {
+          // Regular users see success message before redirecting to HomePage
+          setSuccess('Login successful! Redirecting...');
+          setTimeout(() => {
             navigate('/HomePage');
-          }
-        }, 1500);
+          }, 1500);
+        }
       } else {
         // ✅ Signup successful
         setSuccess('Signup successful! Please login.');

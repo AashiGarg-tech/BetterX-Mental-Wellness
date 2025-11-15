@@ -86,6 +86,7 @@ const CounsellorPastSessions = () => {
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Date</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Time</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Student Email</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
           </tr>
         </thead>
@@ -95,6 +96,7 @@ const CounsellorPastSessions = () => {
             <tr key={index} className="hover:bg-indigo-50">
               <td className="px-6 py-3 text-sm">{formatSessionDate(s.date)}</td>
               <td className="px-6 py-3 text-sm">{s.time}</td>
+              <td className="px-6 py-3 text-sm text-[#7F56D9] font-medium">{s.student_email || 'N/A'}</td>
               <td className="px-6 py-3">
                 <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
                   {s.status}

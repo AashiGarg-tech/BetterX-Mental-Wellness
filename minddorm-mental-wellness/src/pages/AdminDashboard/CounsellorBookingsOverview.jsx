@@ -150,12 +150,17 @@ const CounsellorBookingsOverview = () => {
                     {filteredBookings.length > 0 ? (
                         filteredBookings.map((slot, index) => (
                             <li key={index} className="flex justify-between items-center p-3 bg-white rounded-md shadow-sm border border-gray-200">
-                                <span className="font-semibold text-gray-700">
-                                    {/* Displaying Date, Time, and Counselor Name */}
-                                    {slot.date} at {slot.time}
-                                </span>
+                                <div className="flex flex-col">
+                                    <span className="font-semibold text-gray-700">
+                                        {/* Displaying Date, Time, and Counselor Name */}
+                                        {slot.date} at {slot.time}
+                                    </span>
+                                    <span className="text-sm text-gray-600 mt-1">
+                                        Student: {slot.student_name} ({slot.student_email})
+                                    </span>
+                                </div>
                                 <span className="text-[#7F56D9] font-medium">
-                                    Counselor: {slot.counselor_name} ({slot.specialization})
+                                    {slot.counselor_name} ({slot.specialization})
                                 </span>
                             </li>
                         ))

@@ -138,6 +138,11 @@ router.post('/signup', async (req, res) => {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
+  // Restrict user signups to @igdtuw.ac.in domain only
+  if (!email.endsWith('@igdtuw.ac.in')) {
+    return res.status(400).json({ error: 'Only @igdtuw.ac.in email addresses are allowed for user registration' });
+  }
+
   try {
     const hash = await bcrypt.hash(password, 10);
     await pool.query(
@@ -186,6 +191,12 @@ router.post('/login', async (req, res) => {
     );
     const user = result.rows[0];
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+    // Restrict user role logins to @igdtuw.ac.in domain only
+    // Exception: allow superadmin@gmail.com for superadmin role
+    if (user.role === 'user' && !email.endsWith('@igdtuw.ac.in')) {
+      return res.status(403).json({ error: 'User account login is restricted to @igdtuw.ac.in domain only' });
+    }
 
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });

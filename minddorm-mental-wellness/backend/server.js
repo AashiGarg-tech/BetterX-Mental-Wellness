@@ -475,13 +475,18 @@ app.get('/api/admin/all-booked-slots', authenticateToken, authenticateSuperAdmin
                 cs.schedule_time AS time,
                 c.counsellor_id, 
                 c.name AS counselor_name,
-                c.title AS specialization
+                c.title AS specialization,
+                br.student_id,
+                COALESCE(u.name, br.student_name) AS student_name,
+                u.email AS student_email
             FROM 
                 counsellor_schedule cs
             JOIN 
                 counsellors c ON cs.counsellor_id = c.counsellor_id
             JOIN
                 booking_records br ON cs.schedule_id = br.schedule_id 
+            LEFT JOIN
+                users u ON br.student_id = u.id::text
             WHERE 
                 cs.is_booked = TRUE 
                 AND (cs.schedule_date + cs.schedule_time) >= NOW() 
@@ -497,7 +502,10 @@ app.get('/api/admin/all-booked-slots', authenticateToken, authenticateSuperAdmin
             time: row.time,
             counsellor_id: row.counsellor_id, // Pass ID for filtering
             counselor_name: row.counselor_name,
-            specialization: row.specialization
+            specialization: row.specialization,
+            student_id: row.student_id,
+            student_name: row.student_name,
+            student_email: row.student_email || 'N/A'
         }));
         
         res.json({ slots });
@@ -644,12 +652,16 @@ app.get('/api/staff/my-bookings', authenticateToken, async (req, res) => {
             SELECT
                 cs.schedule_date AS date,
                 cs.schedule_time AS time,
-                br.student_name,  -- Counselor needs to see who they are meeting
+                COALESCE(u.name, br.student_name) AS student_name,
+                br.student_id,
+                u.email AS student_email,
                 br.status
             FROM 
                 counsellor_schedule cs
             JOIN 
                 booking_records br ON cs.schedule_id = br.schedule_id
+            LEFT JOIN
+                users u ON br.student_id = u.id::text
             WHERE 
                 cs.counsellor_id = $1 
                 AND cs.is_booked = TRUE
@@ -693,19 +705,34 @@ app.get('/api/staff/my-past-sessions', authenticateToken, async (req, res) => {
 
         const query = `
             SELECT
-                TO_CHAR(cs.schedule_date, 'YYYY-MM-DD') AS date,
-                TO_CHAR(cs.schedule_time, 'HH24:MI') AS time,
-                br.status
-            FROM 
-                counsellor_schedule cs
-            JOIN 
-                booking_records br ON cs.schedule_id = br.schedule_id
-            WHERE 
-                cs.counsellor_id = $1
-                AND cs.is_booked = TRUE
-                AND (cs.schedule_date + cs.schedule_time) < NOW()
+                TO_CHAR(t.schedule_date, 'YYYY-MM-DD') AS date,
+                TO_CHAR(t.schedule_time, 'HH24:MI') AS time,
+                t.student_id,
+                t.student_name,
+                t.student_email,
+                t.status
+            FROM (
+                SELECT
+                    cs.schedule_date,
+                    cs.schedule_time,
+                    br.student_id,
+                    COALESCE(u.name, br.student_name) AS student_name,
+                    u.email AS student_email,
+                    br.status,
+                    (cs.schedule_date + cs.schedule_time) AS session_time
+                FROM 
+                    counsellor_schedule cs
+                JOIN 
+                    booking_records br ON cs.schedule_id = br.schedule_id
+                LEFT JOIN
+                    users u ON br.student_id = u.id::text
+                WHERE 
+                    cs.counsellor_id = $1
+                    AND cs.is_booked = TRUE
+            ) t
+            WHERE t.session_time < NOW()
             ORDER BY 
-                cs.schedule_date DESC, cs.schedule_time DESC;
+                t.schedule_date DESC, t.schedule_time DESC;
         `;
 
         const { rows } = await pool.query(query, [counsellorId]);

@@ -219,6 +219,10 @@ const AppContent = () => {
     setAuthToken(token);
     setCurrentUser(user);
     localStorage.setItem("token", token);
+    // For admin/counsellor roles, store the intended redirect path
+    if (user.role === 'counsellor' || user.role === 'superadmin') {
+      localStorage.setItem("redirectPath", "/AdminDashboard");
+    }
   };
 
   const handleSignOut = () => {
@@ -226,6 +230,7 @@ const AppContent = () => {
     setAuthToken(null);
     setCurrentUser(null);
     localStorage.removeItem("token");
+    localStorage.removeItem("redirectPath");
   };
 
   return (
@@ -237,7 +242,12 @@ const AppContent = () => {
           path="/"
           element={
             isLoggedIn ? (
-              <Navigate to="/HomePage" replace />
+              // If logged in, check if should redirect to AdminDashboard
+              currentUser?.role === 'counsellor' || currentUser?.role === 'superadmin' ? (
+                <Navigate to="/AdminDashboard" replace />
+              ) : (
+                <Navigate to="/HomePage" replace />
+              )
             ) : (
               <AuthPage onAuthSuccess={handleAuthSuccess} />
             )
