@@ -163,7 +163,6 @@ import WellnessDashboard from "./pages/UserDashboard/WellnessDashboard.jsx";
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard.jsx";
 
 import AnnouncementsPage from "./pages/Community/AnnouncementsPage.jsx";
-import ListenLearnPage from "./pages/Community/ListenLearnPage.jsx";
 import ReachOutPage from "./pages/Community/ReachOutPage.jsx";
 import CommunityHeader from "./pages/Community/CommunityHeader.jsx";
 
@@ -267,7 +266,6 @@ const AppContent = () => {
           <Route path="/HomePage" element={<HomePage />} />
           <Route path="/SupportPage" element={<SupportPage />} />
           <Route path="/AnnouncementsPage" element={<AnnouncementsPage />} />
-          <Route path="/ListenLearnPage" element={<ListenLearnPage />} />
           <Route path="/ReachOutPage" element={<ReachOutPage />} />
           <Route path="/SupportOptions" element={<SupportOptions />} />
           <Route path="/book-counselling" element={<BookingChatbot />} />
