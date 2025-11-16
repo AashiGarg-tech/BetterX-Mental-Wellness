@@ -438,7 +438,7 @@ const AuthPage = ({ onAuthSuccess }) => {
     // Allow @igdtuw.ac.in for regular users or superadmin@gmail.com for superadmin
     const isValidDomain = formData.email.endsWith('@igdtuw.ac.in') || formData.email === 'superadmin@gmail.com';
     if (!isValidDomain) {
-      setError('Only @igdtuw.ac.in email addresses are allowed');
+      setError('Only college email addresses are allowed');
       setLoading(false);
       return;
     }

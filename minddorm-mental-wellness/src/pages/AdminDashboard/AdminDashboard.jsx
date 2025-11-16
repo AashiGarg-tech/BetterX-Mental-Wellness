@@ -78,9 +78,9 @@ const CounselorScheduleView = ({ userEmail }) => {
     }
 
     return (
-        <div className="bg-white font-sans p-8 max-w-5xl mx-auto rounded-lg shadow-2xl">
+        <div className="font-sans max-w-5xl mx-auto rounded-lg">
             <div className="flex items-center justify-between border-b pb-4 mb-6">
-                <h1 className="text-3xl font-bold text-[#000459]">
+                <h1 className="text-4xl font-bold text-[#000459]">
                     My Counselor Schedule 📅
                 </h1>
                 <span className="text-sm font-medium text-gray-500">
@@ -88,8 +88,8 @@ const CounselorScheduleView = ({ userEmail }) => {
                 </span>
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                <h2 className="text-xl font-medium text-gray-700 mb-4">Upcoming Sessions: {myBookings.length}</h2>
+            <div className="bg-white p-6 rounded-xl border border-gray-200">
+                <h2 className="text-xl font-semibold mb-4 text-[#000459]">Upcoming Sessions: {myBookings.length}</h2>
                 
                 {myBookings.length === 0 ? (
                     <div className="text-center py-10 text-gray-500 border-t border-gray-200">

@@ -93,14 +93,14 @@ const Header = ({ onSignOut, isAdmin = false }) => {
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-30">
 
                 {/* My Profile */}
-                <Link
+                {/* <Link
                   to="/UserProfile"
                   onClick={handleLinkClick}
                   className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-100"
                 >
                   <User className="w-4 h-4" />
                   <span>My Profile</span>
-                </Link>
+                </Link> */}
 
                 {/* Dashboard Link — open user or admin dashboard */}
                 <Link

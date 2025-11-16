@@ -25,7 +25,7 @@ const ChatMessage = ({ sender, text }) => (
     <div className={`flex ${sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
         <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-xl shadow-md ${
             sender === 'user' 
-            ? 'bg-blue-600 text-white rounded-br-none' 
+            ? 'bg-[#83acc1] text-white rounded-br-none' 
             : 'bg-gray-200 text-gray-800 rounded-tl-none'
         }`}>
             {text}
@@ -284,7 +284,7 @@ const BookingChatbot = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4">
             <div className="w-full max-w-lg h-[80vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
                 {/* Header */}
                 <div className="bg-[#83acc1] text-white p-4 flex items-center justify-between shadow-lg">

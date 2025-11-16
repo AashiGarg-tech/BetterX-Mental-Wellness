@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const CommunityHeader = ({ activeTab }) => {
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-6">
+    <div className="max-w-6xl mx-auto py-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start justify-between mb-8">
         <div>

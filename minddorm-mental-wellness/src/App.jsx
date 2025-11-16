@@ -187,7 +187,7 @@ const ProtectedRoute = ({ isLoggedIn, children }) => {
 const ProtectedLayout = ({ onSignOut }) => (
   <>
     <Header onSignOut={onSignOut} />
-    <main className="p-4">
+    <main>
       <Outlet />
     </main>
   </>
@@ -199,7 +199,7 @@ const ProtectedLayout = ({ onSignOut }) => (
 const AdminLayout = ({ onSignOut }) => (
   <>
     <Header onSignOut={onSignOut} isAdmin={true} />
-    <main className="p-4">
+    <main>
       <Outlet />
     </main>
   </>
