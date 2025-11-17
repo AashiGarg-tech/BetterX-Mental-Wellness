@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // --- CHANGE 1: Import useRef ---
 import {
     Heart,
     MessageCircle,
@@ -6,19 +6,19 @@ import {
     Mic,
     Flag,
     X,
-    ChevronDown // --- CHANGE 1: Import the down arrow icon ---
+    ChevronDown,
+    ChevronUp // --- CHANGE 1: Import the up arrow icon ---
 } from 'lucide-react';
 
 // Assuming shared components and API base URL
 import CommunityHeader from './CommunityHeader';
 const API_BASE_URL = "http://localhost:5050/api/stories";
 
-// --- CHANGE 2: Define how many posts to show per page ---
 const POSTS_PER_PAGE = 10;
 
 const ReachOutPage = () => {
     // --- STATE MANAGEMENT ---
-    const [posts, setPosts] = useState([]); // Will hold ALL fetched posts
+    const [posts, setPosts] = useState([]); 
     const [messageText, setMessageText] = useState('');
     const [postStatus, setPostStatus] = useState({ type: '', message: '' });
 
@@ -32,8 +32,10 @@ const ReachOutPage = () => {
     const [replyingToPostId, setReplyingToPostId] =useState(null);
     const [replyCommentContent, setReplyCommentContent] = useState('');
 
-    // --- CHANGE 2 (continued): Add state for pagination ---
     const [visiblePostsCount, setVisiblePostsCount] = useState(POSTS_PER_PAGE);
+
+    // --- CHANGE 2: Create a ref for the post feed ---
+    const postFeedRef = useRef(null);
 
     const currentUserId = '66f3e1b7f3d5b0a8c2f218a0'; // Mock User ID
     
@@ -52,7 +54,6 @@ const ReachOutPage = () => {
                     throw new Error('Failed to fetch posts from API.');
                 }
                 const data = await response.json();
-                // Set all posts. We will control visibility with .slice()
                 setPosts(data); 
             } catch (error) {
                 console.error("Error fetching posts:", error);
@@ -67,6 +68,7 @@ const ReachOutPage = () => {
     // 2. VOICE INPUT HANDLER (Unchanged)
     // =======================================================
     const startVoiceInput = () => {
+        // ... (Voice input code is unchanged) ...
         if (!('webkitSpeechRecognition' in window)) {
             setPostStatus({ type: 'error', message: 'Voice input not supported by your browser.' });
             return;
@@ -110,6 +112,7 @@ const ReachOutPage = () => {
 
     // --- handleLike (Unchanged) ---
     const handleLike = async (postId) => {
+        // ... (handleLike code is unchanged) ...
         setPostStatus({ type: 'info', message: 'Updating like status...' });
         
         let isCurrentlyLiked = false;
@@ -161,17 +164,20 @@ const ReachOutPage = () => {
 
     // --- Flag Handlers (Unchanged) ---
     const handleFlagClick = (postId) => {
+        // ... (handleFlagClick code is unchanged) ...
         setSelectedPostId(postId);
         setShowFlagModal(true);
         setFlagReason('');
     };
 
     const handleReasonChange = (e) => {
+        // ... (handleReasonChange code is unchanged) ...
         const value = e.target.value;
         setFlagReason(value === 'other' ? 'other:' : value);
     };
 
     const handleFlagSubmit = async () => {
+        // ... (handleFlagSubmit code is unchanged) ...
         if (!flagReason.trim() || !selectedPostId) return;
 
         setPostStatus({ type: 'info', message: 'Submitting flag for review...' });
@@ -213,6 +219,7 @@ const ReachOutPage = () => {
     };
 
     const handleFlagCancel = () => {
+        // ... (handleFlagCancel code is unchanged) ...
         setShowFlagModal(false);
         setSelectedPostId(null);
         setFlagReason('');
@@ -220,6 +227,7 @@ const ReachOutPage = () => {
     
     // --- Post Creation/Reply Handlers (Unchanged) ---
     const handleCreateNewPost = async (e) => {
+        // ... (handleCreateNewPost code is unchanged) ...
         e.preventDefault();
         if (!messageText.trim()) return;
 
@@ -249,6 +257,7 @@ const ReachOutPage = () => {
     };
     
     const handlePostReply = async (postId) => {
+        // ... (handlePostReply code is unchanged) ...
         if (!replyCommentContent.trim()) return;
 
         setPostStatus({ type: 'info', message: 'Posting reply...' });
@@ -286,13 +295,29 @@ const ReachOutPage = () => {
     };
     
     const handleReplyToPost = (postId) => {
+        // ... (handleReplyToPost code is unchanged) ...
         setReplyingToPostId(prevId => prevId === postId ? null : postId);
         setReplyCommentContent(''); 
     };
 
-    // --- CHANGE 4: Add a handler for the "Show More" button ---
+    // --- Pagination Handlers ---
+
+    // --- CHANGE 5: Modify "Show More" to scroll down ---
     const handleShowMorePosts = () => {
         setVisiblePostsCount(prevCount => prevCount + POSTS_PER_PAGE);
+        // Scroll to the top of the feed to show the start of the new content
+        if (postFeedRef.current) {
+            postFeedRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    // --- CHANGE 4: Add a handler for "Show Less" ---
+    const handleShowLessPosts = () => {
+        setVisiblePostsCount(POSTS_PER_PAGE);
+        // Scroll back to the top of the post feed
+        if (postFeedRef.current) {
+            postFeedRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     };
 
 
@@ -336,9 +361,9 @@ const ReachOutPage = () => {
                         ))}
                     </div>
 
-                    {/* Post Feed */}
-                    <div className="space-y-6">
-                        {/* --- CHANGE 3: Use .slice(0, visiblePostsCount) --- */}
+                    {/* --- CHANGE 3: Add the ref to this div --- */}
+                    <div className="space-y-6" ref={postFeedRef}>
+                        {/* Use .slice(0, visiblePostsCount) (unchanged) */}
                         {posts.slice(0, visiblePostsCount).map((post) => (
                             <div
                                 key={post._id} 
@@ -346,6 +371,7 @@ const ReachOutPage = () => {
                                     post.comments && post.comments.length > 0 ? 'border-l-4 border-[#B5D8EB] pl-6' : ''
                                 }`}
                             >
+                                {/* ... All post content (user info, text, buttons) is unchanged ... */}
                                 <div className="flex items-center gap-3 mb-3">
                                     <img
                                         src={getAvatarSrc(post.userId)}
@@ -446,9 +472,21 @@ const ReachOutPage = () => {
                         ))}
                     </div>
 
-                    {/* --- CHANGE 4 (continued): Add the "Show More" button --- */}
-                    {posts.length > visiblePostsCount && (
-                        <div className="flex justify-center mt-8">
+                    {/* --- CHANGE 6: Add conditional "Show Less" and "Show More" buttons --- */}
+                    <div className="flex justify-center items-center gap-4 mt-8">
+                        {/* Show Less Button */}
+                        {visiblePostsCount > POSTS_PER_PAGE && (
+                            <button
+                                onClick={handleShowLessPosts}
+                                className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-full hover:bg-gray-100 transition-colors shadow-sm"
+                            >
+                                <ChevronUp className="w-4 h-4" />
+                                Show Less
+                            </button>
+                        )}
+
+                        {/* Show More Button */}
+                        {posts.length > visiblePostsCount && (
                             <button
                                 onClick={handleShowMorePosts}
                                 className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-blue-600 bg-white border border-blue-200 rounded-full hover:bg-blue-50 transition-colors shadow-sm"
@@ -456,13 +494,14 @@ const ReachOutPage = () => {
                                 Show More
                                 <ChevronDown className="w-4 h-4" />
                             </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
 
                     {/* Flag Modal (UNCHANGED) */}
                     {showFlagModal && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                             {/* ... (Flag modal code is unchanged) ... */}
                              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                                 <h3 className="text-lg font-semibold text-[#2B5A7A] mb-4">
                                     Flag this post
@@ -519,6 +558,7 @@ const ReachOutPage = () => {
 
                     {/* Message Input (FOR CREATING A NEW MAIN POST) (unchanged) */}
                     <div className="mt-10 pt-6 border-t border-slate-200">
+                        {/* ... (Message input form is unchanged) ... */}
                         <label className="block text-sm font-medium text-[#2B5A7A] mb-2">
                             Share what's on your mind
                         </label>
