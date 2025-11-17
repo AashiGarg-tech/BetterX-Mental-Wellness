@@ -328,56 +328,57 @@ const WellnessDashboard = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* Card 1: Average Mood - ✅ REAL DATA */}
-            <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-xl shadow-md border border-gray-100 transition-transform hover:scale-105">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 font-medium mb-1">Average Mood</p>
-                  <p className="text-3xl font-bold text-gray-800 mb-1">
-                    {getMoodEmoji(moodStats?.averageMood)} {moodStats?.averageMood?.toFixed(1) || '-'}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {getMoodDescription(moodStats?.averageMood)} (Last 30 days)
-                  </p>
-                </div>
-                <div className="bg-pink-500 p-3 rounded-lg">
-                  <Heart className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </div>
+{/* Card 1: Average Mood - ✅ REAL DATA */}
+<div className="bg-[#7F56D9] p-4 rounded-xl text-white flex-1 min-w-[150px] shadow-lg transition-transform hover:scale-105">
+  <div className="flex items-start justify-between">
+    <div className="flex-1">
+      <p className="text-sm font-light opacity-80">Average Mood</p>
+      <p className="text-3xl font-bold mt-1">
+        {getMoodEmoji(moodStats?.averageMood)} {moodStats?.averageMood?.toFixed(1) || '-'}
+      </p>
+      <p className="text-xs opacity-70 mt-1">
+        {getMoodDescription(moodStats?.averageMood)}
+      </p>
+    </div>
+    <div className="bg-white bg-opacity-20 p-2 rounded-lg ml-2">
+      <Heart className="w-5 h-5 text-white" />
+    </div>
+  </div>
+</div>
 
-            {/* Card 2: Current Streak - ✅ REAL DATA */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl shadow-md border border-gray-100 transition-transform hover:scale-105">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 font-medium mb-1">Current Streak</p>
-                  <p className="text-3xl font-bold text-gray-800 mb-1">
-                    {moodStats?.currentStreak || 0} days
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {moodStats?.currentStreak > 0 ? 'Keep it going! 🔥' : 'Start your streak today'}
-                  </p>
-                </div>
-                <div className="bg-orange-500 p-3 rounded-lg">
-                  <Flame className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </div>
+{/* Card 2: Current Streak - ✅ REAL DATA */}
+<div className="bg-[#F79009] p-4 rounded-xl text-white flex-1 min-w-[150px] shadow-lg transition-transform hover:scale-105">
+  <div className="flex items-start justify-between">
+    <div className="flex-1">
+      <p className="text-sm font-light opacity-80">Current Streak</p>
+      <p className="text-3xl font-bold mt-1">
+        {moodStats?.currentStreak || 0} days
+      </p>
+      <p className="text-xs opacity-70 mt-1">
+        {moodStats?.currentStreak > 0 ? 'Keep it going! 🔥' : 'Start your streak today'}
+      </p>
+    </div>
+    <div className="bg-white bg-opacity-20 p-2 rounded-lg ml-2">
+      <Flame className="w-5 h-5 text-white" />
+    </div>
+  </div>
+</div>
 
-            {/* Card 3: Mood Master - ✅ REAL DATA */}
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl shadow-md border border-gray-100 transition-transform hover:scale-105">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 font-medium mb-1">Mood Master</p>
-                  <p className="text-3xl font-bold text-gray-800 mb-1">
-                    {moodStats?.totalEntries || 0}
-                  </p>
-                  <p className="text-xs text-gray-500">Total check-ins</p>
-                </div>
-                <div className="bg-purple-500 p-3 rounded-lg">
-                  <Award className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            </div>
+{/* Card 3: Mood Master - ✅ REAL DATA */}
+<div className="bg-[#2970FF] p-4 rounded-xl text-white flex-1 min-w-[150px] shadow-lg transition-transform hover:scale-105">
+  <div className="flex items-start justify-between">
+    <div className="flex-1">
+      <p className="text-sm font-light opacity-80">Mood Master</p>
+      <p className="text-3xl font-bold mt-1">
+        {moodStats?.totalEntries || 0}
+      </p>
+      <p className="text-xs opacity-70 mt-1">Total check-ins</p>
+    </div>
+    <div className="bg-white bg-opacity-20 p-2 rounded-lg ml-2">
+      <Award className="w-5 h-5 text-white" />
+    </div>
+  </div>
+</div>
           </div>
         )}
 
