@@ -306,31 +306,36 @@ const authenticateSuperAdmin = (req, res, next) => {
 // 1. GET /api/counsellors/availability (Publicly accessible)
 app.get('/api/counsellors/availability', async (req, res) => {
     try {
-        const query = `
-            SELECT
-                cs.schedule_id,
-                c.name,
-                c.title,
-                cs.schedule_date,
-                cs.schedule_time
-            FROM 
-                counsellor_schedule cs
-            JOIN 
-                counsellors c ON cs.counsellor_id = c.counsellor_id
-            WHERE 
-                cs.is_booked = FALSE
-                AND (cs.schedule_date + cs.schedule_time) >= NOW() 
-            ORDER BY 
-                cs.schedule_date ASC, cs.schedule_time ASC;
-        `;
-        const { rows } = await pool.query(query);
-        res.json(rows);
+      const query = `
+        SELECT
+          cs.schedule_id,
+          c.name,
+          c.title,
+          cs.schedule_date,
+          cs.schedule_time
+        FROM counsellor_schedule cs
+        JOIN counsellors c
+          ON cs.counsellor_id = c.counsellor_id
+        WHERE
+          cs.is_booked = FALSE
+          AND (
+            (cs.schedule_date + cs.schedule_time)
+              AT TIME ZONE 'Asia/Kolkata'
+          ) > (NOW() AT TIME ZONE 'Asia/Kolkata')
+        ORDER BY
+          cs.schedule_date ASC,
+          cs.schedule_time ASC;
+      `;
+  
+      const { rows } = await pool.query(query);
+      res.json(rows);
     } catch (err) {
-        console.error("Error fetching availability:", err);
-        res.status(500).json({ error: "Failed to fetch schedule data." });
+      console.error("Error fetching availability:", err);
+      res.status(500).json({ error: "Failed to fetch schedule data." });
     }
-});
-
+  });
+  
+  
 // 2. 🔒 GET /api/bookings/my-appointments (Requires JWT)
 app.get('/api/bookings/my-appointments', authenticateToken, async (req, res) => {
     // ID securely attached by the middleware

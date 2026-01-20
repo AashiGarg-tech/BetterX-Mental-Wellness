@@ -70,7 +70,8 @@ const groupScheduleByDate = (rawData) => {
         if (!slot.schedule_date || !slot.schedule_time) return; 
 
         // FIX: Ensure value is a string before manipulation
-        const date = String(slot.schedule_date).split('T')[0]; 
+        const date = new Date(slot.schedule_date).toLocaleDateString('en-CA'); // YYYY-MM-DD
+ 
         const time = String(slot.schedule_time).substring(0, 5); 
         
         if (!grouped[date]) {
