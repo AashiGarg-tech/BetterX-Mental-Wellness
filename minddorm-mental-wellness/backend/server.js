@@ -246,7 +246,47 @@ import userStatsRoutes from "./routes/userStatsRoutes.js";
 import pool from "./config/db.js"; 
 // ⚠️ IMPORTANT: Assuming you have this middleware
 import authenticateToken from './middleware/authenticateToken.js'; 
-
+async function generateUpcomingSlots() {
+    const check = await pool.query(`
+      SELECT COUNT(*) 
+      FROM counsellor_schedule
+      WHERE schedule_date >= CURRENT_DATE
+        AND is_booked = FALSE
+    `);
+  
+    if (Number(check.rows[0].count) > 0) {
+      return;
+    }
+  
+    for (let counsellorId = 1; counsellorId <= 4; counsellorId++) {
+      for (let i = 0; i < 30; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+  
+        const formattedDate =
+          date.toISOString().split("T")[0];
+  
+        const times = ["10:00:00", "15:00:00"];
+  
+        for (const time of times) {
+          await pool.query(
+            `
+            INSERT INTO counsellor_schedule
+            (
+              counsellor_id,
+              schedule_date,
+              schedule_time,
+              is_booked
+            )
+            VALUES ($1,$2,$3,FALSE)
+            ON CONFLICT DO NOTHING
+            `,
+            [counsellorId, formattedDate, time]
+          );
+        }
+      }
+    }
+  }
 // CRITICAL FIX: Call dotenv.config() immediately after ALL imports
 dotenv.config();
 
@@ -306,7 +346,8 @@ const authenticateSuperAdmin = (req, res, next) => {
 // 1. GET /api/counsellors/availability (Publicly accessible)
 app.get('/api/counsellors/availability', async (req, res) => {
     try {
-      const query = `
+        await generateUpcomingSlots();
+        const query = `
         SELECT
           cs.schedule_id,
           c.name,

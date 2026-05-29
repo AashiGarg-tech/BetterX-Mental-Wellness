@@ -145,6 +145,7 @@ const BookingChatbot = () => {
 
         const loadScheduleAndStartChat = async () => {
             const rawData = await fetchRealAvailability();
+            console.log("RAW DATA:", rawData);
             const grouped = groupScheduleByDate(rawData);
             
             setGroupedSchedule(grouped);
