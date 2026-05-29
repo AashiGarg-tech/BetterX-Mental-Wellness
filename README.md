@@ -2,7 +2,7 @@
 
 BetterX is a student mental wellness platform built to support students through counselling, mood tracking, chatbot support, resources, and community interaction.
 
-## 🚀 Run the project locally
+## Run the project locally
 
 ### 1. Start backend server
 
@@ -43,7 +43,7 @@ http://localhost:5050
 ---
 
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Frontend
 - React.js
@@ -59,7 +59,7 @@ http://localhost:5050
 
 ---
 
-## ✨ Features
+## Features
 
 - Student authentication
 - Counsellor booking system
@@ -71,7 +71,7 @@ http://localhost:5050
 
 ---
 
-## ⚠️ Important Notes
+## Important Notes
 
 - Start backend before frontend.
 - Keep backend terminal running while using the app.
